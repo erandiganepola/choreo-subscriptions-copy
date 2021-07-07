@@ -1,0 +1,8 @@
+[package]
+org = "choreo"
+name = "choreo_subscriptions"
+version = "1.0.0-m1"
+
+[build-options]
+observabilityIncluded = true
+cloud = "docker"
