@@ -1,5 +1,6 @@
 import ballerina/http;
 import ballerina/io;
+import choreo/choreo_subscriptions.services as _;
 
 # Choreo Subscription service for manipulating Choreo subscriptions.
 service /subscriptions on new http:Listener(9090) {
