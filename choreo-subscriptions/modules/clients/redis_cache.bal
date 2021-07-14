@@ -32,7 +32,7 @@ public function getValueFromRedis(string key) returns (string|error)? {
         log:printDebug("Cache hits for key", key = key);
         return value;
     } else if (value is error) {
-        log:printError("Error occured looking for chache.", key = key, 'error=value);
+        log:printError("Error occured looking for chache.", key = key, 'error = value);
         return value;
     }
 }

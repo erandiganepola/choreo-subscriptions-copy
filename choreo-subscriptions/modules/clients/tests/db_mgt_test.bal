@@ -8,11 +8,12 @@
 import ballerina/test;
 import ballerinax/java.jdbc;
 
-TierDAO mockedTierDAO = {
+TierDAO mockTierDAO = {
+    id: "0ccca02-643a43ae-a38-200f2b",
     name: "Free Tier",
-    description: "Free allocation to tryout choroe",
+    description: "Free allocation to tryout choreo",
     cost: "0$ per Month",
-    created_at: "2021/07/07"
+    created_at: "2021-07-13 12:58:15"
 };
 
 TierQuotas mockTierQuotas = {
@@ -21,17 +22,65 @@ TierQuotas mockTierQuotas = {
     api_quota: 10
 };
 
+SubscriptionDAO mockSubscriptionDAO = {
+    id: "01ebe42f-9f13-1c18-9e38-cd24f0ebd234",
+    org_id: "496b70d7-2ab6-440-405-dde8f64",
+    tier_id: "7a13129e-b663-4724-ae7e-5c2e1c364d1c",
+    billing_date: "2021-07-13 12:58:15.0",
+    status: "ACTIVE",
+    created_at: "2021-07-13 22:32:42.0"
+};
+
+AttributeDAO mockAttributeDAO = {
+    id: "496b70d7-2ab6-440-405-dde8f64",
+    name: "organization_quota",
+    description: "Limit for the number of organization can be created by a user",
+    created_at: "2021-07-13 12:58:15"
+};
+
+@test:Config {
+    groups: ["clients"]
+}
+function testGetSubscriptionForOrgFromDB() {
+    choreoDbClient = test:mock(jdbc:Client);
+    test:prepare(choreoDbClient).when("query").thenReturn(returnMockedSubscriptionDAOStream());
+    SubscriptionDAO|error result = getSubscriptionForOrgFromDB("0000");
+
+    test:assertEquals(result, mockSubscriptionDAO);
+}
+
+@test:Config {
+    groups: ["clients"]
+}
+function testGetSubscriptionFromDB() {
+    choreoDbClient = test:mock(jdbc:Client);
+    test:prepare(choreoDbClient).when("query").thenReturn(returnMockedSubscriptionDAOStream());
+    SubscriptionDAO|error result = getSubscriptionFromDB("0000");
+
+    test:assertEquals(result, mockSubscriptionDAO);
+}
+
+@test:Config {
+    groups: ["clients"]
+}
+function testGetAttributeFromDB() {
+    choreoDbClient = test:mock(jdbc:Client);
+    test:prepare(choreoDbClient).when("query").thenReturn(returnMockedAttributeDAOStream());
+    AttributeDAO|error result = getAttributeFromDB("0000");
+
+    test:assertEquals(result, mockAttributeDAO);
+}
+
 @test:Config {
     groups:["clients"]
 }
 function testGetTierFromDB() {
     string tierId = "0000";
-    string quotaQuery = "SELECT name, description, cost, created_at FROM tier WHERE id='0000'";
     choreoDbClient = test:mock(jdbc:Client);
-    test:prepare(choreoDbClient).when("query").thenReturn(returnMockedTierDAO());
-    TierDAO|error? result = getTierFromDB(tierId);
+    test:prepare(choreoDbClient).when("query").thenReturn(returnMockedTierDAOStream());
+    TierDAO|error result = getTierFromDB(tierId);
 
-    test:assertEquals(result, mockedTierDAO);
+    test:assertEquals(result, mockTierDAO);
 }
 
 @test:Config {
@@ -39,57 +88,31 @@ function testGetTierFromDB() {
 }
 function testGetTierQuotasFromDB() {
     string tierId = "0000";
-    string quotaQuery = "SELECT attribute_name, threshold FROM quota WHERE tier_id='0000'";
     choreoDbClient = test:mock(jdbc:Client);
-    test:prepare(choreoDbClient).when("query").thenReturn(returnMockedTierQuotas());
-    TierQuotas|error? result = getTierQuotasFromDB(tierId);
+    test:prepare(choreoDbClient).when("query").thenReturn(returnMockedTierQuotasStream());
+    TierQuotas|error result = getTierQuotasFromDB(tierId);
 
     test:assertEquals(result, mockTierQuotas);
 }
 
-@test:Mock { functionName: "getTierFromDB" }
-test:MockFunction getTierFromDBFn = new();
-
-@test:Mock { functionName: "getTierQuotasFromDB" }
-test:MockFunction getTierQuotasFromDBFn = new();
-
-@test:Config {
-    groups:["clients"]
-}
-function testGetTierForOrgFromDB() {
-    string orgId = "0000";
-    Tier mockedTier = {
-        name: "Free Tier",
-        description: "Free allocation to tryout choroe",
-        cost: "0$ per Month",
-        created_at: "2021/07/07",
-        service_quota: 10,
-        integration_quota: 10,
-        api_quota: 10
-    };
-    string tierQuery = "SELECT tier_id FROM subscription WHERE org_id='0000'";
-    choreoDbClient = test:mock(jdbc:Client);
-    test:prepare(choreoDbClient).when("query").thenReturn(returnMockedTierRecord());
-    test:when(getTierFromDBFn).thenReturn(mockedTierDAO);
-    test:when(getTierQuotasFromDBFn).thenReturn(mockTierQuotas);
-    Tier|error? result = getTierForOrgFromDB(orgId);
-
-    test:assertEquals(result, mockedTier);
-}
-
-function returnMockedTierRecord() returns stream<TierRecord, error> {
-    stream<TierRecord, error> tierRecordStream = new (new TierRecordStreamImplementor());
-    return tierRecordStream;
-}
-
-function returnMockedTierQuotas() returns stream<QuotaRecord, error> {
+function returnMockedTierQuotasStream() returns stream<QuotaRecord, error> {
     stream<QuotaRecord, error> quotaStream = new (new TierQuotasStreamImplementor());
     return quotaStream;
 }
 
-function returnMockedTierDAO() returns stream<TierDAO, error> {
+function returnMockedTierDAOStream() returns stream<TierDAO, error> {
     stream<TierDAO, error> tierDaoStream = new (new TierDaoStreamImplementor());
     return tierDaoStream;
+}
+
+function returnMockedSubscriptionDAOStream() returns stream<SubscriptionDAO, error> {
+    stream<SubscriptionDAO, error> subscriptionDAOStream = new (new SubscriptionDAOStreamImplementor());
+    return subscriptionDAOStream;
+}
+
+function returnMockedAttributeDAOStream() returns stream<AttributeDAO, error> {
+    stream<AttributeDAO, error> attributeDAOStream = new (new AttributeDAOStreamImplementor());
+    return attributeDAOStream;
 }
 
 class TierQuotasStreamImplementor {
@@ -114,10 +137,11 @@ class TierQuotasStreamImplementor {
 class TierDaoStreamImplementor {
     private int index = 0;
     private TierDAO[] currentEntries = [{
+        id: "0ccca02-643a43ae-a38-200f2b",
         name: "Free Tier",
-        description: "Free allocation to tryout choroe",
+        description: "Free allocation to tryout choreo",
         cost: "0$ per Month",
-        created_at: "2021/07/07"
+        created_at: "2021-07-13 12:58:15"
     }];
 
     isolated function init() {}
@@ -131,17 +155,44 @@ class TierDaoStreamImplementor {
     }
 }
 
-class TierRecordStreamImplementor {
+class SubscriptionDAOStreamImplementor {
     private int index = 0;
-    private TierRecord[] currentEntries = [{tier_id: "0000"}];
+    private SubscriptionDAO[] currentEntries = [{
+        id: "01ebe42f-9f13-1c18-9e38-cd24f0ebd234",
+        org_id: "496b70d7-2ab6-440-405-dde8f64",
+        tier_id: "7a13129e-b663-4724-ae7e-5c2e1c364d1c",
+        billing_date: "2021-07-13 12:58:15.0",
+        status: "ACTIVE",
+        created_at: "2021-07-13 22:32:42.0"
+    }];
 
     isolated function init() {}
 
-    public isolated function next() returns record {| TierRecord value; |}|error? {       
+    public isolated function next() returns record {| SubscriptionDAO value; |}|error? {
         if (self.index < self.currentEntries.length()) {
-            record {| TierRecord value; |} tierRecord = {value: self.currentEntries[self.index]};
+            record {| SubscriptionDAO value; |} subscriptionDAO = {value: self.currentEntries[self.index]};
             self.index += 1;
-            return tierRecord;
+            return subscriptionDAO;
+        }
+    }
+}
+
+class AttributeDAOStreamImplementor {
+    private int index = 0;
+    private AttributeDAO[] currentEntries = [{
+        id: "496b70d7-2ab6-440-405-dde8f64",
+        name: "organization_quota",
+        description: "Limit for the number of organization can be created by a user",
+        created_at: "2021-07-13 12:58:15"
+    }];
+
+    isolated function init() {}
+
+    public isolated function next() returns record {| AttributeDAO value; |}|error? {
+        if (self.index < self.currentEntries.length()) {
+            record {| AttributeDAO value; |} attributeDAO = {value: self.currentEntries[self.index]};
+            self.index += 1;
+            return attributeDAO;
         }
     }
 }

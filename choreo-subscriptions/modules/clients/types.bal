@@ -5,34 +5,53 @@
 // herein in any form is strictly forbidden, unless permitted by WSO2 expressly.
 // You may not alter or remove any copyright or other notice from copies of this content.
 
-type QuotaRecord record {|
+public type QuotaRecord record {|
+    string tier_id?;
     string attribute_name;
     int threshold;
 |};
 
-type TierRecord record {|
+public type TierRecord record {|
     string tier_id;
 |};
 
-type TierQuotas record {|
+public type TierQuotas record {|
     int service_quota = 10;
     int integration_quota = 10;
     int api_quota = 10;
 |};
 
-type TierDAO record {|
+public type TierDAO record {|
+    string id?;
+    string name;
+    string description;
+    string cost;
+    string created_at?;
+|};
+
+public type Tier record {|
+    string id?;
     string name;
     string description;
     string cost;
     string created_at;
+    int service_quota;
+    int integration_quota;
+    int api_quota;
 |};
 
-public type Tier record {|
-    string name = "";
-    string description = "";
-    string cost = "";
-    string created_at = "";
-    int service_quota = 0;
-    int integration_quota = 0;
-    int api_quota = 0;
+public type SubscriptionDAO record {|
+    string id?;
+    string org_id;
+    string tier_id;
+    string billing_date;
+    string status;
+    string created_at?;
+|};
+
+public type AttributeDAO record {|
+    string id?;
+    string name;
+    string description;
+    string created_at?;
 |};

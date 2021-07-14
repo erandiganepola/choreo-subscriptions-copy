@@ -30,66 +30,86 @@ jdbc:Client choreoDbClient = check new (
     options = options
 );
 
-public function getTierForOrgFromDB(string orgId) returns Tier|error? {
-    string tierId = "";
-    sql:ParameterizedQuery tierQuery = `SELECT tier_id FROM subscription WHERE org_id=${orgId}`;
-    stream<record{}, error> tierResult = choreoDbClient->query(tierQuery);
-    record {|record {} value;|}|error? tierRecord = tierResult.next();
-    if (tierRecord is record {|record {} value;|}) {
-        tierId = <string>tierRecord.value["tier_id"];
-    } else {
-        log:printError("Error retrieving data from the database.", 'error=tierRecord);
-        return tierRecord;
-    }
-    error? closeError = tierResult.close();
+public function getSubscriptionForOrgFromDB(string orgId) returns SubscriptionDAO|error {
+    sql:ParameterizedQuery subscriptionQuery = `SELECT id, org_id, tier_id, billing_date, status, created_at
+        FROM subscription WHERE org_id=${orgId}`;
+    stream<record {}, error> subscriptionResult = choreoDbClient->query(subscriptionQuery, SubscriptionDAO);
+    stream<SubscriptionDAO, sql:Error> subscriptionStream = <stream<SubscriptionDAO, sql:Error>>subscriptionResult;
+    record {| SubscriptionDAO value; |}|error? subscriptionRecord = subscriptionStream.next();
+
+    error? closeError = subscriptionResult.close();
     if (closeError is error) {
-        log:printWarn("Error while closing connection. ", 'error=closeError);
+        log:printWarn("Error while closing connection.", 'error=closeError);
     }
 
-    Tier tier = {};
-    TierDAO|error? tierDAO = getTierFromDB(tierId);
-    if (tierDAO is error) {
-        return tierDAO;
+    if (subscriptionRecord is record {| SubscriptionDAO value; |}) {
+        return subscriptionRecord.value;
     } else {
-        tier.name = (<TierDAO>tierDAO).name;
-        tier.description = (<TierDAO>tierDAO).description;
-        tier.cost = (<TierDAO>tierDAO).cost;
-        tier.created_at = (<TierDAO>tierDAO).name;
+        log:printError("Error retrieving data from the database.", 'error = subscriptionRecord);
+        return error("Error retrieving data from the database.");
     }
-
-    TierQuotas|error? tierQuotas = getTierQuotasFromDB(tierId);
-    if (tierQuotas is error) {
-        return tierQuotas;
-    } else {
-        tier.integration_quota = (<TierQuotas>tierQuotas).integration_quota;
-        tier.service_quota = (<TierQuotas>tierQuotas).service_quota;
-        tier.api_quota = (<TierQuotas>tierQuotas).api_quota;
-    }
-    return tier;
 }
 
-public function getTierFromDB(string tierId) returns TierDAO|error? {
-    TierDAO|error? tierDAO;
-    sql:ParameterizedQuery tierQuery = `SELECT name, description, cost, created_at FROM tier WHERE id=${tierId}`;
+public function getSubscriptionFromDB(string subscriptionId) returns SubscriptionDAO|error {
+    sql:ParameterizedQuery subscriptionQuery = `SELECT id, org_id, tier_id, billing_date, status, created_at 
+        FROM subscription WHERE id = ${subscriptionId}`;
+    stream<record{}, error> subscriptionResult = choreoDbClient->query(subscriptionQuery, SubscriptionDAO);
+    stream<SubscriptionDAO, sql:Error> subscriptionStream = <stream<SubscriptionDAO, sql:Error>>subscriptionResult;
+    record{| SubscriptionDAO value; |}|sql:Error subscription = subscriptionStream.next();
+
+    error? closeErr = subscriptionStream.close();
+    if (closeErr is error) {
+        log:printWarn("Error while closing database connection.", 'error = closeErr);
+    }
+
+    if (subscription is record {| SubscriptionDAO value; |}) {
+        return <SubscriptionDAO>subscription.value;
+    } else {
+        log:printError("Error while retrieving subscription details", id = subscriptionId, 'error = subscription);
+        return subscription;
+    }
+}
+
+public function getAttributeFromDB(string attributeId) returns AttributeDAO|error {
+    sql:ParameterizedQuery attributeQuery = `SELECT id, name, description, created_at FROM attribute WHERE
+        id=${attributeId}`;
+    stream<record{}, error> attributeResult = choreoDbClient->query(attributeQuery, AttributeDAO);
+    stream<AttributeDAO, sql:Error> attributeStream = <stream<AttributeDAO, sql:Error>>attributeResult;
+    record {| AttributeDAO value; |}|sql:Error attribute = attributeStream.next();
+
+    error? closeErr = attributeStream.close();
+    if (closeErr is error) {
+        log:printWarn("Error while closing database connection.", 'error = closeErr);
+    }
+
+    if (attribute is record {| AttributeDAO value; |}) {
+        return <AttributeDAO>attribute.value;
+    } else {
+        log:printError("Error while retrieving attribute details", id = attributeId, 'error = attribute);
+        return attribute;
+    }
+}
+
+public function getTierFromDB(string tierId) returns TierDAO|error {
+    sql:ParameterizedQuery tierQuery = `SELECT id, name, description, cost, created_at FROM tier WHERE id=${tierId}`;
     stream<record{}, error> tierResult = choreoDbClient->query(tierQuery, TierDAO);
-    record {|record {} value;|}|error? tierRecord = tierResult.next();
+    stream<TierDAO, sql:Error> tierStream = <stream<TierDAO, sql:Error>>tierResult;
+    record {| TierDAO value; |}|error? tierRecord = tierStream.next();
 
     error? closeErr = tierResult.close();
     if (closeErr is error) {
-        log:printWarn("Error while closing connection.", 'error=closeErr);
+        log:printWarn("Error while closing database connection.", 'error = closeErr);
     }
 
-    if (tierRecord is record {|record {} value;|}) {
-        tierDAO = <TierDAO>tierRecord.value;
+    if (tierRecord is record {| TierDAO value; |}) {
+        return <TierDAO>tierRecord.value;
     } else {
-        log:printError("Error retrieving tier from the database.", tierId=tierId, 'error=tierRecord);
-        tierDAO = tierRecord;
+        log:printError("Error retrieving tier from the database.", tierId = tierId, 'error = tierRecord);
+        return error("Error retrieving tier from the database.");
     }
-    
-    return tierDAO;
 }
 
-public function getTierQuotasFromDB(string tierId) returns TierQuotas|error? {
+public function getTierQuotasFromDB(string tierId) returns TierQuotas|error {
     TierQuotas tierQuotas = {};
     sql:ParameterizedQuery quotaQuery = `SELECT attribute_name, threshold FROM quota WHERE tier_id=${tierId}`;
     stream<record{}, error> quotaResult = choreoDbClient->query(quotaQuery, QuotaRecord);
@@ -109,5 +129,62 @@ public function getTierQuotasFromDB(string tierId) returns TierQuotas|error? {
         return loopError;
     } else {
         return tierQuotas;
+    }
+}
+
+public function addTierToDB(TierDAO tier) returns error? {
+    sql:ParameterizedQuery addTierQuery = `INSERT INTO tier(id, name, description, cost) values (${tier?.id},
+        ${tier.name}, ${tier.description}, ${tier.cost})`;
+    sql:ExecutionResult|sql:Error result = choreoDbClient->execute(addTierQuery);
+
+    if (result is sql:Error) {
+        log:printError("Error while creating tier in database.", name = tier.name, 'error = result);
+        return result;
+    } else {
+        log:printDebug("Successfully created the tier in database.", name = tier.name);
+    }
+}
+
+public function addSubscriptionToDB(SubscriptionDAO subscription) returns error? {
+    sql:ParameterizedQuery addSubscriptionQuery = `INSERT INTO subscription(id, org_id, tier_id, billing_date, status)
+        values(${subscription?.id}, ${subscription.org_id}, ${subscription.tier_id}, ${subscription.billing_date},
+        ${subscription.status})`;
+    sql:ExecutionResult|sql:Error result = choreoDbClient->execute(addSubscriptionQuery);
+
+    if (result is sql:Error) {
+        log:printError("Error while creating subscription.", org_id = subscription.org_id,
+            tier_id = subscription.tier_id, 'error = result);
+        return result;
+    } else {
+        log:printDebug("Successfully created the subscription in database.", org_id = subscription.org_id,
+            tier_id = subscription.tier_id);
+    }
+}
+
+public function addAttributeToDB(AttributeDAO attribute) returns error? {
+    sql:ParameterizedQuery addAttributeQuery = `INSERT INTO attribute(id, name, description) values (${attribute?.id},
+        ${attribute.name}, ${attribute.description})`;
+    sql:ExecutionResult|sql:Error result = choreoDbClient->execute(addAttributeQuery);
+
+    if (result is sql:Error) {
+        log:printError("Error while creating quota attribute.", name = attribute.name, 'error = result);
+        return result;
+    } else {
+        log:printDebug("Successfully added the attribute.", name = attribute.name);
+    }
+}
+
+public function addQuotaRecordToDB(QuotaRecord quotaRecord) returns error? {
+    sql:ParameterizedQuery addAttributeRecordQuery = `INSERT INTO quota(tier_id, attribute_name, threshold)
+        values(${quotaRecord?.tier_id}, ${quotaRecord.attribute_name}, ${quotaRecord.threshold})`;
+    sql:ExecutionResult|sql:Error result = choreoDbClient->execute(addAttributeRecordQuery);
+
+    if (result is sql:Error) {
+        log:printError("Error while adding attribute to quota.", name = quotaRecord.attribute_name,
+            tier_id = quotaRecord?.tier_id, 'error = result);
+        return result;
+    } else {
+        log:printDebug("Successfully added new attribute to quota.", name = quotaRecord.attribute_name,
+            tier_id = quotaRecord?.tier_id);
     }
 }
