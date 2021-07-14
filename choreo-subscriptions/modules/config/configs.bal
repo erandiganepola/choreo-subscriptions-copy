@@ -5,7 +5,7 @@
 // herein in any form is strictly forbidden, unless permitted by WSO2 expressly.
 // You may not alter or remove any copyright or other notice from copies of this content.
  
-public type JDBCConnection record {|
+public type Database record {|
     string url;
     string user;
     string password;
@@ -27,7 +27,7 @@ public type RedisClient record {|
     int connectionTimeout;
 |};
 
-public configurable JDBCConnection jdbcConnection = {
+public configurable Database database = {
     url: "jdbc:mysql://localhost:3306/choreo?autoReconnect=true",
     user: "root",
     password: "password",

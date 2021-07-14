@@ -11,21 +11,21 @@ import ballerinax/java.jdbc;
 import choreo_subscriptions.config;
 
 sql:ConnectionPool connPool = {
-    maxOpenConnections: config:jdbcConnection.poolSize,
-    minIdleConnections: config:jdbcConnection.minIdle
+    maxOpenConnections: config:database.poolSize,
+    minIdleConnections: config:database.minIdle
 };
 
 jdbc:Options options = {
     properties: {
-        "loginTimeout": config:jdbcConnection.loginTimeout,
-        "useSSL": config:jdbcConnection.useSsl
+        "loginTimeout": config:database.loginTimeout,
+        "useSSL": config:database.useSsl
     }
 };
 
 jdbc:Client choreoDbClient = check new (
-    config:jdbcConnection.url,
-    config:jdbcConnection.user,
-    config:jdbcConnection.password,
+    config:database.url,
+    config:database.user,
+    config:database.password,
     connectionPool = connPool,
     options = options
 );
