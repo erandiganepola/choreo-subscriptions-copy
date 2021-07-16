@@ -18,7 +18,7 @@ public type TierRecord record {|
 public type TierQuotas record {|
     int service_quota = 10;
     int integration_quota = 10;
-    int api_quota = 10;
+    int api_quota = 30;
 |};
 
 public type TierDAO record {|
@@ -31,13 +31,21 @@ public type TierDAO record {|
 
 public type Tier record {|
     string id?;
+    string name = "";
+    string description = "";
+    string cost = "";
+    string created_at = "";  
+    TierQuotas quota_limits?;
+|};
+    
+public type TierQuotaJoin record {|
+    string id;
     string name;
     string description;
     string cost;
     string created_at;
-    int service_quota;
-    int integration_quota;
-    int api_quota;
+    string attribute_name;
+    int threshold;
 |};
 
 public type SubscriptionDAO record {|

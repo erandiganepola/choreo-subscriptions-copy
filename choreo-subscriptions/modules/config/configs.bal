@@ -18,6 +18,7 @@ public type Database record {|
 public type RedisClient record {|
     string host;
     string password;
+    string cacheKeyPrefix;
     boolean connectionPooling;
     boolean isClusterConnection;
     boolean startTls;
@@ -40,6 +41,7 @@ public configurable Database database = {
 public configurable RedisClient redisClient = {
     host: "localhost:6379",
     password: "",
+    cacheKeyPrefix: "choreo_subscriptions.",
     enableSsl: false,
     connectionTimeout: 500,
     connectionPooling: true,

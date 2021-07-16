@@ -7,8 +7,14 @@
 
 import ballerina/log;
 import ballerina/uuid;
-import choreo_subscriptions.clients;
+import choreo_subscriptions.db;
+import choreo_subscriptions.cache;
 
+
+# Returns the subscribed tier object for the given organization
+#
+# + orgId - Id of the interested organization
+# + return - Subscribed tier object
 public function getSubscriptionForOrg(string orgId) returns GetTierDetailResponse|error {
     GetTierDetailResponse|error getTierDetailResponse = getTierForOrgFromCache(orgId);
     if (getTierDetailResponse is GetTierDetailResponse) {
@@ -18,41 +24,85 @@ public function getSubscriptionForOrg(string orgId) returns GetTierDetailRespons
     }
 }
 
+# Creates a new Tier and returns
+#
+# + createTierRequest - The tier object needs to be created
+# + return - Created tier object
 public function createTier(CreateTierRequest createTierRequest) returns CreateTierResponse|error {
     string uuid = uuid:createType1AsString();
-    clients:TierDAO tierDAOIn = {
+    db:TierDAO tierDAOIn = {
         id: uuid,
         name: createTierRequest.name,
         description: createTierRequest.description,
         cost: createTierRequest.cost
     };
 
-    error? result = clients:addTierToDB(tierDAOIn);
-    if (result is error) {
-        return result;
-    } else {
-        clients:TierDAO|error tierDAOOut = clients:getTierFromDB(uuid);
-        if (tierDAOOut is clients:TierDAO) {
-            CreateTierResponse createTierResponse = {
-                tier_meta_data: {
-                    id: <string>tierDAOOut?.id,
-                    name: tierDAOOut.name,
-                    description: tierDAOOut.description,
-                    cost: tierDAOOut.cost,
-                    created_at: <string>tierDAOOut?.created_at
-                }
-            };
-            return createTierResponse;
+    CreateTierResponse createTierResponse = {};
+    boolean isRollbacked = false;
+    boolean isCommitFailed = false;
+    transaction {
+        error? resultAddTier = db:addTier(tierDAOIn);
+        if (resultAddTier is error) {
+            log:printError("Error occured while adding tier to database.", tier = createTierRequest);
+            isRollbacked = true;
+            rollback;
         } else {
-            return tierDAOOut;
+            db:QuotaRecord[] quotaRecords = [];
+            quotaRecords[0] = { tier_id: uuid, attribute_name: "service_quota",
+                threshold: createTierRequest.service_quota };
+            quotaRecords[1] = { tier_id: uuid, attribute_name: "integration_quota",
+                threshold: createTierRequest.integration_quota };
+            quotaRecords[2] = { tier_id: uuid, attribute_name: "api_quota", threshold: createTierRequest.api_quota };
+
+            error? resultAddTierQuotas = db:addQuotaRecords(quotaRecords);
+            if (resultAddTierQuotas is error) {
+                log:printError("Error occured while adding the tier quota limits to database",
+                    quotaRecords = quotaRecords, 'error = resultAddTierQuotas);
+                isRollbacked = true;
+                rollback;
+            } else {
+                error? err = commit;
+                if (err is error) {
+                    isCommitFailed = true;
+                    log:printError("Error occured while commiting the transaction to add tier", 'error = err);
+                }
+            }
         }
+    }
+
+    if (isRollbacked || isCommitFailed) {
+        log:printError("Error while adding tier to the database.", tierId = uuid);
+        return error("Error while adding tier to the database.", tierId = uuid);
+    } else {
+        db:Tier|error tier = db:getTier(uuid);
+        if (tier is error) {
+            return tier;
+        } else {
+            createTierResponse = {
+                tier: {
+                    id: <string>tier?.id,
+                    name: tier.name,
+                    description: tier.description,
+                    cost: tier.cost,
+                    created_at: <string>tier?.created_at,
+                    service_quota: <int>tier?.quota_limits?.service_quota,
+                    integration_quota: <int>tier?.quota_limits?.integration_quota,
+                    api_quota: <int>tier?.quota_limits?.api_quota
+                }
+            }; 
+        }
+        return createTierResponse;
     }
 }
 
+# Creates a new subscription object
+#
+# + createSubscriptionRequest - The subscription object need to be created
+# + return - created subscription object
 public function createSubscription(CreateSubscriptionRequest createSubscriptionRequest) returns
         CreateSubscriptionResponse|error {
     string uuid = uuid:createType1AsString();
-    clients:SubscriptionDAO subscriptionDAOin = {
+    db:SubscriptionDAO subscriptionDAOin = {
         id: uuid,
         org_id: createSubscriptionRequest.org_id,
         tier_id: createSubscriptionRequest.tier_id,
@@ -60,12 +110,12 @@ public function createSubscription(CreateSubscriptionRequest createSubscriptionR
         status: createSubscriptionRequest.status
     };
     
-    error? result = clients:addSubscriptionToDB(subscriptionDAOin);
+    error? result = db:addSubscription(subscriptionDAOin);
     if (result is error) {
         return result;
     } else {
-        clients:SubscriptionDAO|error subscriptionDAOOut = clients:getSubscriptionFromDB(uuid);
-        if (subscriptionDAOOut is clients:SubscriptionDAO) {
+        db:SubscriptionDAO|error subscriptionDAOOut = db:getSubscription(uuid);
+        if (subscriptionDAOOut is db:SubscriptionDAO) {
             CreateSubscriptionResponse createSubscriptionResponse = {
                 subscription: {
                     id: <string>subscriptionDAOOut?.id,
@@ -83,15 +133,20 @@ public function createSubscription(CreateSubscriptionRequest createSubscriptionR
     }
 }
 
+
+# Creates a quota record. That is a key, value pair of new tier limit
+#
+# + createQuotaRecordRequest - The quota record needs to be created
+# + return - The created quota record object
 public function createQuotaRecord(CreateQuotaRecordRequest createQuotaRecordRequest) returns
         CreateQuotaRecordResponse|error {
-    clients:QuotaRecord quotaRecordIn = {
+    db:QuotaRecord quotaRecordIn = {
         tier_id: createQuotaRecordRequest.tier_id,
         attribute_name: createQuotaRecordRequest.attribute_name,
         threshold: createQuotaRecordRequest.threshold
     };
 
-    error? result = clients:addQuotaRecordToDB(quotaRecordIn);
+    error? result = db:addQuotaRecord(quotaRecordIn);
     if (result is error) {
         return result;
     } else {
@@ -106,20 +161,24 @@ public function createQuotaRecord(CreateQuotaRecordRequest createQuotaRecordRequ
     }
 }
 
+# Creates a new attribute for rate limiting. Ex : number_of_organizations per user
+#
+# + createAttributeRequest - The attribute object needs to be created
+# + return - The created attribute object
 public function createAttribute(CreateAttributeRequest createAttributeRequest) returns CreateAttributeResponse|error {
     string uuid = uuid:createType1AsString();
-    clients:AttributeDAO attibuteDAOIn = {
+    db:AttributeDAO attibuteDAOIn = {
         id: uuid,
         name: createAttributeRequest.name,
         description: createAttributeRequest.description
     };
 
-    error? result = clients:addAttributeToDB(attibuteDAOIn);
+    error? result = db:addAttribute(attibuteDAOIn);
     if (result is error) {
         return result;
     } else {
-        clients:AttributeDAO|error attributeDAOOut = clients:getAttributeFromDB(uuid);
-        if (attributeDAOOut is clients:AttributeDAO) {
+        db:AttributeDAO|error attributeDAOOut = db:getAttribute(uuid);
+        if (attributeDAOOut is db:AttributeDAO) {
             CreateAttributeResponse createAttributeResponse = {
                 attribute: {
                     id: <string>attributeDAOOut?.id,
@@ -136,12 +195,13 @@ public function createAttribute(CreateAttributeRequest createAttributeRequest) r
 }
 
 function getTierForOrgFromCache(string orgId) returns GetTierDetailResponse|error {
-    (string|error)? tierString = clients:getValueFromRedis(orgId);
+    (string|error)? tierString = cache:getEntry(orgId);
     if (tierString is string) {
         json|error tierJson = tierString.fromJsonString();
         if (tierJson is json) {
             GetTierDetailResponse getTierDetailResponse = {
                 tier: {
+                    id: (check tierJson.id).toString(),
                     name: (check tierJson.name).toString(),
                     description: (check tierJson.description).toString(),
                     cost: (check tierJson.cost).toString(),
@@ -154,7 +214,7 @@ function getTierForOrgFromCache(string orgId) returns GetTierDetailResponse|erro
             return getTierDetailResponse;
         } else {
             log:printError("Error while parsing cached value to tier object.", cache = tierString, 'error = tierJson);
-            return tierJson;
+            return tierJson;    
         }
     } else {
         return error("Subscription corresponding to the organization id not available in the cache", orgId = orgId);
@@ -162,31 +222,26 @@ function getTierForOrgFromCache(string orgId) returns GetTierDetailResponse|erro
 }
 
 function getTierForOrgFromDB(string orgId) returns GetTierDetailResponse|error {
-    clients:SubscriptionDAO|error subscriptionDAO = clients:getSubscriptionForOrgFromDB(orgId);
-    if (subscriptionDAO is clients:SubscriptionDAO) {
+    db:SubscriptionDAO|error subscriptionDAO = db:getSubscriptionForOrg(orgId);
+    if (subscriptionDAO is db:SubscriptionDAO) {
         string tierId = subscriptionDAO.tier_id;
-        clients:TierDAO|error tierDAO = clients:getTierFromDB(tierId);
-        if (tierDAO is clients:TierDAO) {
-            clients:TierQuotas|error tierQuotas = clients:getTierQuotasFromDB(tierId);
-            if (tierQuotas is clients:TierQuotas) {
-                GetTierDetailResponse getTierDetailResponse = {
-                    tier: {
-                        id: <string>(<clients:TierDAO>tierDAO)?.id,
-                        name: (<clients:TierDAO>tierDAO).name,
-                        description: (<clients:TierDAO>tierDAO).description,
-                        cost: (<clients:TierDAO>tierDAO).cost,
-                        created_at: <string>(<clients:TierDAO>tierDAO)?.created_at,
-                        integration_quota: (<clients:TierQuotas>tierQuotas).integration_quota,
-                        service_quota: (<clients:TierQuotas>tierQuotas).service_quota,
-                        api_quota: (<clients:TierQuotas>tierQuotas).api_quota
-                    }
-                };
-                return getTierDetailResponse;
-            } else {
-                return tierQuotas;
-            }
+        db:Tier|error tier = db:getTier(tierId);
+        if (tier is db:Tier) {
+            Tier tierDTO = {
+                id: <string>tier?.id,
+                name: tier.name,
+                description: tier.description,
+                cost: tier.cost,
+                created_at: <string>tier?.created_at,
+                service_quota: <int>tier?.quota_limits?.service_quota,
+                integration_quota: <int>tier?.quota_limits?.integration_quota,
+                api_quota: <int>tier?.quota_limits?.api_quota
+            };
+            string|error entry = cache:setEntry(orgId, tierDTO.toString());
+            GetTierDetailResponse getTierDetailResponse = { tier: tierDTO };
+            return getTierDetailResponse;
         } else {
-            return tierDAO;
+            return tier;
         }
     } else {
         return subscriptionDAO;

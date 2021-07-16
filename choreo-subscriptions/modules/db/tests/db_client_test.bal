@@ -8,18 +8,19 @@
 import ballerina/test;
 import ballerinax/java.jdbc;
 
-TierDAO mockTierDAO = {
+TierQuotas mockTierQuotas = {
+    integration_quota: 15,
+    service_quota: 10,
+    api_quota: 20
+};
+
+Tier mockTier = {
     id: "0ccca02-643a43ae-a38-200f2b",
     name: "Free Tier",
     description: "Free allocation to tryout choreo",
     cost: "0$ per Month",
-    created_at: "2021-07-13 12:58:15"
-};
-
-TierQuotas mockTierQuotas = {
-    integration_quota: 10,
-    service_quota: 10,
-    api_quota: 10
+    created_at: "2021-07-13 12:58:15",
+    quota_limits: mockTierQuotas
 };
 
 SubscriptionDAO mockSubscriptionDAO = {
@@ -39,58 +40,58 @@ AttributeDAO mockAttributeDAO = {
 };
 
 @test:Config {
-    groups: ["clients"]
+    groups: ["db"]
 }
-function testGetSubscriptionForOrgFromDB() {
-    choreoDbClient = test:mock(jdbc:Client);
-    test:prepare(choreoDbClient).when("query").thenReturn(returnMockedSubscriptionDAOStream());
-    SubscriptionDAO|error result = getSubscriptionForOrgFromDB("0000");
+function testGetSubscriptionForOrg() {
+    dbClient = test:mock(jdbc:Client);
+    test:prepare(dbClient).when("query").thenReturn(returnMockedSubscriptionDAOStream());
+    SubscriptionDAO|error result = getSubscriptionForOrg("0000");
 
     test:assertEquals(result, mockSubscriptionDAO);
 }
 
 @test:Config {
-    groups: ["clients"]
+    groups: ["db"]
 }
-function testGetSubscriptionFromDB() {
-    choreoDbClient = test:mock(jdbc:Client);
-    test:prepare(choreoDbClient).when("query").thenReturn(returnMockedSubscriptionDAOStream());
-    SubscriptionDAO|error result = getSubscriptionFromDB("0000");
+function testGetSubscription() {
+    dbClient = test:mock(jdbc:Client);
+    test:prepare(dbClient).when("query").thenReturn(returnMockedSubscriptionDAOStream());
+    SubscriptionDAO|error result = getSubscription("0000");
 
     test:assertEquals(result, mockSubscriptionDAO);
 }
 
 @test:Config {
-    groups: ["clients"]
+    groups: ["db"]
 }
-function testGetAttributeFromDB() {
-    choreoDbClient = test:mock(jdbc:Client);
-    test:prepare(choreoDbClient).when("query").thenReturn(returnMockedAttributeDAOStream());
-    AttributeDAO|error result = getAttributeFromDB("0000");
+function testGetAttribute() {
+    dbClient = test:mock(jdbc:Client);
+    test:prepare(dbClient).when("query").thenReturn(returnMockedAttributeDAOStream());
+    AttributeDAO|error result = getAttribute("0000");
 
     test:assertEquals(result, mockAttributeDAO);
 }
 
 @test:Config {
-    groups:["clients"]
+    groups:["db"]
 }
-function testGetTierFromDB() {
+function testGetTier() {
     string tierId = "0000";
-    choreoDbClient = test:mock(jdbc:Client);
-    test:prepare(choreoDbClient).when("query").thenReturn(returnMockedTierDAOStream());
-    TierDAO|error result = getTierFromDB(tierId);
+    dbClient = test:mock(jdbc:Client);
+    test:prepare(dbClient).when("query").thenReturn(returnMockedTierQuotaJoinStream());
+    Tier|error result = getTier(tierId);
 
-    test:assertEquals(result, mockTierDAO);
+    test:assertEquals(result, mockTier);
 }
 
 @test:Config {
-    groups:["clients"]
+    groups:["db"]
 }
-function testGetTierQuotasFromDB() {
+function testGetTierQuotas() {
     string tierId = "0000";
-    choreoDbClient = test:mock(jdbc:Client);
-    test:prepare(choreoDbClient).when("query").thenReturn(returnMockedTierQuotasStream());
-    TierQuotas|error result = getTierQuotasFromDB(tierId);
+    dbClient = test:mock(jdbc:Client);
+    test:prepare(dbClient).when("query").thenReturn(returnMockedTierQuotasStream());
+    TierQuotas|error result = getTierQuotas(tierId);
 
     test:assertEquals(result, mockTierQuotas);
 }
@@ -100,9 +101,9 @@ function returnMockedTierQuotasStream() returns stream<QuotaRecord, error> {
     return quotaStream;
 }
 
-function returnMockedTierDAOStream() returns stream<TierDAO, error> {
-    stream<TierDAO, error> tierDaoStream = new (new TierDaoStreamImplementor());
-    return tierDaoStream;
+function returnMockedTierQuotaJoinStream() returns stream<TierQuotaJoin, error> {
+    stream<TierQuotaJoin, error> tierQuotaJoinStream = new (new TierQuotaJoinStreamImplementor());
+    return tierQuotaJoinStream;
 }
 
 function returnMockedSubscriptionDAOStream() returns stream<SubscriptionDAO, error> {
@@ -119,8 +120,8 @@ class TierQuotasStreamImplementor {
     private int index = 0;
     private QuotaRecord[] currentEntries = [
         {attribute_name: "service_quota", threshold : 10},
-        {attribute_name: "integration_quota", threshold: 10},
-        {attribute_name: "api_quota", threshold : 10}
+        {attribute_name: "integration_quota", threshold: 15},
+        {attribute_name: "api_quota", threshold : 20}
     ];
 
     isolated function init() {}
@@ -134,23 +135,43 @@ class TierQuotasStreamImplementor {
     }
 }
 
-class TierDaoStreamImplementor {
+class TierQuotaJoinStreamImplementor {
     private int index = 0;
-    private TierDAO[] currentEntries = [{
+    private TierQuotaJoin[] currentEntries = [{
         id: "0ccca02-643a43ae-a38-200f2b",
         name: "Free Tier",
         description: "Free allocation to tryout choreo",
         cost: "0$ per Month",
-        created_at: "2021-07-13 12:58:15"
+        created_at: "2021-07-13 12:58:15",
+        attribute_name: "service_quota",
+        threshold: 10
+    },
+    {
+        id: "0ccca02-643a43ae-a38-200f2b",
+        name: "Free Tier",
+        description: "Free allocation to tryout choreo",
+        cost: "0$ per Month",
+        created_at: "2021-07-13 12:58:15",
+        attribute_name: "integration_quota",
+        threshold: 15
+    },
+    {
+        id: "0ccca02-643a43ae-a38-200f2b",
+        name: "Free Tier",
+        description: "Free allocation to tryout choreo",
+        cost: "0$ per Month",
+        created_at: "2021-07-13 12:58:15",
+        attribute_name: "api_quota",
+        threshold: 20
     }];
 
     isolated function init() {}
 
-    public isolated function next() returns record {| TierDAO value; |}|error? {       
+    public isolated function next() returns record {| TierQuotaJoin value; |}|error? {       
         if (self.index < self.currentEntries.length()) {
-            record {| TierDAO value; |} tierDAO = {value: self.currentEntries[self.index]};
+            record {| TierQuotaJoin value; |} tierQuotaJoin = {value: self.currentEntries[self.index]};
             self.index += 1;
-            return tierDAO;
+            return tierQuotaJoin;
         }
     }
 }

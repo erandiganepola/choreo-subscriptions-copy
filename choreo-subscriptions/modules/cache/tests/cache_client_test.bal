@@ -9,23 +9,25 @@ import ballerina/test;
 import ballerinax/redis;
 
 @test:Config {
-    groups:["clients"]
+    groups: ["cache"]
 }
-function testGetValueFromRedis() {
+function testGetEntry() {
     string orgId = "0000";
-    conn = test:mock(redis:Client);
-    test:prepare(conn).when("get").withArguments(orgId).thenReturn(returnCachedValueForGet());
-    (string|error)? result = checkpanic getValueFromRedis(orgId);
+    cacheClient = test:mock(redis:Client);
+    test:prepare(cacheClient).when("get").thenReturn(returnCachedValueForGet());
+    (string|error)? result = checkpanic getEntry(orgId);
     test:assertEquals(result, "0000");
 }
 
-@test:Config {}
-function testSetValueInRedis() {
+@test:Config {
+    groups: ["cache"]
+}
+function testSetEntry() {
     string orgId = "0000";
     string tier =  "{\"integration\": 10, \"service\": 10 }";
-    conn = test:mock(redis:Client);
-    test:prepare(conn).when("set").withArguments(orgId, tier).thenReturn(returnCachedValueForSet());
-    string|error? result = setValueInRedis(orgId, tier);
+    cacheClient = test:mock(redis:Client);
+    test:prepare(cacheClient).when("set").thenReturn(returnCachedValueForSet());
+    string|error? result = setEntry(orgId, tier);
     test:assertEquals(result, "OK");
 }
 
