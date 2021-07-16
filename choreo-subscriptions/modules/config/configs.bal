@@ -5,10 +5,12 @@
 // herein in any form is strictly forbidden, unless permitted by WSO2 expressly.
 // You may not alter or remove any copyright or other notice from copies of this content.
  
+import ballerina/os;
+
 public type Database record {|
     string url;
     string user;
-    string password;
+    string password = os:getEnv("DB_PASSWORD");
     int loginTimeout;
     boolean useSsl;
     int poolSize;
@@ -17,7 +19,7 @@ public type Database record {|
 
 public type RedisClient record {|
     string host;
-    string password;
+    string password = os:getEnv("CACHE_PASSWORD");
     string cacheKeyPrefix;
     boolean connectionPooling;
     boolean isClusterConnection;
@@ -31,7 +33,6 @@ public type RedisClient record {|
 public configurable Database database = {
     url: "jdbc:mysql://localhost:3306/choreo?autoReconnect=true",
     user: "root",
-    password: "password",
     loginTimeout: 10000,
     useSsl: false,
     poolSize: 5,
@@ -40,7 +41,6 @@ public configurable Database database = {
 
 public configurable RedisClient redisClient = {
     host: "localhost:6379",
-    password: "",
     cacheKeyPrefix: "choreo_subscriptions.",
     enableSsl: false,
     connectionTimeout: 500,

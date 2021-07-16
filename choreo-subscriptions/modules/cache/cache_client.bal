@@ -11,7 +11,7 @@ import choreo_subscriptions.config;
 
 redis:Client cacheClient = check new ({
     host: config:redisClient.host,
-    password: config:redisClient.password,
+    password: <string>config:redisClient?.password,
     options: {
         connectionPooling: config:redisClient.connectionPooling,
         isClusterConnection: config:redisClient.isClusterConnection,

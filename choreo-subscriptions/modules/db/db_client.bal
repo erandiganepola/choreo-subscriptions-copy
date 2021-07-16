@@ -25,7 +25,7 @@ jdbc:Options options = {
 jdbc:Client dbClient = check new (
     config:database.url,
     config:database.user,
-    config:database.password,
+    config:database?.password,
     connectionPool = connPool,
     options = options
 );
