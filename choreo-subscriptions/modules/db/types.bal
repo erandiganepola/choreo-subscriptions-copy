@@ -19,6 +19,7 @@ public type TierQuotas record {|
     int service_quota = 10;
     int integration_quota = 10;
     int api_quota = 30;
+    int remote_app_quota = 10;
 |};
 
 public type TierDAO record {|

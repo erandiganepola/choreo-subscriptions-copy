@@ -52,7 +52,10 @@ public function createTier(CreateTierRequest createTierRequest) returns CreateTi
                 threshold: createTierRequest.service_quota };
             quotaRecords[1] = { tier_id: uuid, attribute_name: "integration_quota",
                 threshold: createTierRequest.integration_quota };
-            quotaRecords[2] = { tier_id: uuid, attribute_name: "api_quota", threshold: createTierRequest.api_quota };
+            quotaRecords[2] = { tier_id: uuid, attribute_name: "api_quota",
+                threshold: createTierRequest.api_quota };
+            quotaRecords[3] = { tier_id: uuid, attribute_name: "remote_app_quota",
+                threshold: createTierRequest.remote_app_quota };
 
             error? resultAddTierQuotas = db:addQuotaRecords(quotaRecords);
             if (resultAddTierQuotas is error) {
@@ -87,7 +90,8 @@ public function createTier(CreateTierRequest createTierRequest) returns CreateTi
                     created_at: <string>tier?.created_at,
                     service_quota: <int>tier?.quota_limits?.service_quota,
                     integration_quota: <int>tier?.quota_limits?.integration_quota,
-                    api_quota: <int>tier?.quota_limits?.api_quota
+                    api_quota: <int>tier?.quota_limits?.api_quota,
+                    remote_app_quota: <int>tier?.quota_limits?.remote_app_quota
                 }
             }; 
         }
@@ -130,34 +134,6 @@ public function createSubscription(CreateSubscriptionRequest createSubscriptionR
         } else {
             return subscriptionDAOOut;
         }
-    }
-}
-
-
-# Creates a quota record. That is a key, value pair of new tier limit
-#
-# + createQuotaRecordRequest - The quota record needs to be created
-# + return - The created quota record object
-public function createQuotaRecord(CreateQuotaRecordRequest createQuotaRecordRequest) returns
-        CreateQuotaRecordResponse|error {
-    db:QuotaRecord quotaRecordIn = {
-        tier_id: createQuotaRecordRequest.tier_id,
-        attribute_name: createQuotaRecordRequest.attribute_name,
-        threshold: createQuotaRecordRequest.threshold
-    };
-
-    error? result = db:addQuotaRecord(quotaRecordIn);
-    if (result is error) {
-        return result;
-    } else {
-        CreateQuotaRecordResponse createQuotaRecordRespone = {
-            quota_record: {
-                tier_id: <string>quotaRecordIn?.tier_id,
-                attribute_name: quotaRecordIn.attribute_name,
-                threshold: quotaRecordIn.threshold
-            }
-        };
-        return createQuotaRecordRespone;
     }
 }
 
@@ -208,7 +184,8 @@ function getTierForOrgFromCache(string orgId) returns GetTierDetailResponse|erro
                     created_at: (check tierJson.created_at).toString(),
                     integration_quota: <int>(check tierJson.integration_quota),
                     service_quota: <int>(check tierJson.service_quota),
-                    api_quota: <int>(check tierJson.api_quota)
+                    api_quota: <int>(check tierJson.api_quota),
+                    remote_app_quota: <int>(check tierJson.remote_app_quota)
                 }
             };
             return getTierDetailResponse;
@@ -235,7 +212,8 @@ function getTierForOrgFromDB(string orgId) returns GetTierDetailResponse|error {
                 created_at: <string>tier?.created_at,
                 service_quota: <int>tier?.quota_limits?.service_quota,
                 integration_quota: <int>tier?.quota_limits?.integration_quota,
-                api_quota: <int>tier?.quota_limits?.api_quota
+                api_quota: <int>tier?.quota_limits?.api_quota,
+                remote_app_quota: <int>tier?.quota_limits?.remote_app_quota
             };
             string|error entry = cache:setEntry(orgId, tierDTO.toString());
             GetTierDetailResponse getTierDetailResponse = { tier: tierDTO };
