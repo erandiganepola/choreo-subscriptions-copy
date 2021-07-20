@@ -3,18 +3,11 @@ public type CreateTierResponse record {|
 |};
 
 public type CreateTierRequest record {|
-    string name = "";
-    string description = "";
-    string cost = "";
-    int service_quota = 0;
-    int integration_quota = 0;
-    int api_quota = 0;
-    int remote_app_quota = 0;
+    Tier tier = {};
 |};
 
 public type CreateAttributeRequest record {|
-    string name = "";
-    string description = "";
+    Attribute attribute = {};
 |};
 
 public type Tier record {|
@@ -37,10 +30,7 @@ public type Attribute record {|
 |};
 
 public type CreateSubscriptionRequest record {|
-    string org_id = "";
-    string tier_id = "";
-    string billing_date = "";
-    string status = "";
+    Subscription subscription = {};
 |};
 
 public type CreateSubscriptionResponse record {|

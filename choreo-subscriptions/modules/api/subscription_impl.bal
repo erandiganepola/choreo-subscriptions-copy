@@ -32,9 +32,9 @@ public function createTier(CreateTierRequest createTierRequest) returns CreateTi
     string uuid = uuid:createType1AsString();
     db:TierDAO tierDAOIn = {
         id: uuid,
-        name: createTierRequest.name,
-        description: createTierRequest.description,
-        cost: createTierRequest.cost
+        name: createTierRequest.tier.name,
+        description: createTierRequest.tier.description,
+        cost: createTierRequest.tier.cost
     };
 
     CreateTierResponse createTierResponse = {};
@@ -43,19 +43,19 @@ public function createTier(CreateTierRequest createTierRequest) returns CreateTi
     transaction {
         error? resultAddTier = db:addTier(tierDAOIn);
         if (resultAddTier is error) {
-            log:printError("Error occured while adding tier to database.", tier = createTierRequest);
+            log:printError("Error occured while adding tier to database.", tier = createTierRequest.tier);
             isRollbacked = true;
             rollback;
         } else {
             db:QuotaRecord[] quotaRecords = [];
             quotaRecords[0] = { tier_id: uuid, attribute_name: "service_quota",
-                threshold: createTierRequest.service_quota };
+                threshold: createTierRequest.tier.service_quota };
             quotaRecords[1] = { tier_id: uuid, attribute_name: "integration_quota",
-                threshold: createTierRequest.integration_quota };
+                threshold: createTierRequest.tier.integration_quota };
             quotaRecords[2] = { tier_id: uuid, attribute_name: "api_quota",
-                threshold: createTierRequest.api_quota };
+                threshold: createTierRequest.tier.api_quota };
             quotaRecords[3] = { tier_id: uuid, attribute_name: "remote_app_quota",
-                threshold: createTierRequest.remote_app_quota };
+                threshold: createTierRequest.tier.remote_app_quota };
 
             error? resultAddTierQuotas = db:addQuotaRecords(quotaRecords);
             if (resultAddTierQuotas is error) {
@@ -108,10 +108,10 @@ public function createSubscription(CreateSubscriptionRequest createSubscriptionR
     string uuid = uuid:createType1AsString();
     db:SubscriptionDAO subscriptionDAOin = {
         id: uuid,
-        org_id: createSubscriptionRequest.org_id,
-        tier_id: createSubscriptionRequest.tier_id,
-        billing_date: createSubscriptionRequest.billing_date,
-        status: createSubscriptionRequest.status
+        org_id: createSubscriptionRequest.subscription.org_id,
+        tier_id: createSubscriptionRequest.subscription.tier_id,
+        billing_date: createSubscriptionRequest.subscription.billing_date,
+        status: createSubscriptionRequest.subscription.status
     };
     
     error? result = db:addSubscription(subscriptionDAOin);
@@ -145,8 +145,8 @@ public function createAttribute(CreateAttributeRequest createAttributeRequest) r
     string uuid = uuid:createType1AsString();
     db:AttributeDAO attibuteDAOIn = {
         id: uuid,
-        name: createAttributeRequest.name,
-        description: createAttributeRequest.description
+        name: createAttributeRequest.attribute.name,
+        description: createAttributeRequest.attribute.description
     };
 
     error? result = db:addAttribute(attibuteDAOIn);
