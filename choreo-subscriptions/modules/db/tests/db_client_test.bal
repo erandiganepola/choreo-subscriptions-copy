@@ -11,7 +11,8 @@ import ballerinax/java.jdbc;
 TierQuotas mockTierQuotas = {
     integration_quota: 15,
     service_quota: 10,
-    api_quota: 20
+    api_quota: 20,
+    remote_app_quota: 10
 };
 
 Tier mockTier = {
@@ -121,7 +122,8 @@ class TierQuotasStreamImplementor {
     private QuotaRecord[] currentEntries = [
         {attribute_name: "service_quota", threshold : 10},
         {attribute_name: "integration_quota", threshold: 15},
-        {attribute_name: "api_quota", threshold : 20}
+        {attribute_name: "api_quota", threshold : 20},
+        {attribute_name: "remote_app_quota", threshold: 10}
     ];
 
     isolated function init() {}
@@ -163,6 +165,15 @@ class TierQuotaJoinStreamImplementor {
         created_at: "2021-07-13 12:58:15",
         attribute_name: "api_quota",
         threshold: 20
+    },
+    {
+        id: "0ccca02-643a43ae-a38-200f2b",
+        name: "Free Tier",
+        description: "Free allocation to tryout choreo",
+        cost: "0$ per Month",
+        created_at: "2021-07-13 12:58:15",
+        attribute_name: "remote_app_quota",
+        threshold: 10
     }];
 
     isolated function init() {}
