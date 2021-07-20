@@ -20,3 +20,7 @@ build: clean
 .PHONY: test
 test: clean
 	bal test --code-coverage choreo-subscriptions
+
+.PHONY: build.docker
+build.docker:
+	docker build -t choreoipaas/choreo-subscriptions:latest .

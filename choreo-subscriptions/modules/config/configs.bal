@@ -30,6 +30,14 @@ public type RedisClient record {|
     int connectionTimeout;
 |};
 
+// time duration for healthz state caching
+public int HC_CACHED_TIME_DURATION = 30000; //30s
+const string HC_CACHED_TIME_DURATION_ENV = "HC_CACHED_TIME_DURATION_MILI_SEC";
+
+function init() {
+    HC_CACHED_TIME_DURATION = readIntFromEnvVar(HC_CACHED_TIME_DURATION_ENV, HC_CACHED_TIME_DURATION);
+}
+
 public configurable Database database = {
     url: "jdbc:sqlserver://localhost:1433;databaseName=choreo",
     user: "SA",
