@@ -31,8 +31,8 @@ public type RedisClient record {|
 |};
 
 public configurable Database database = {
-    url: "jdbc:mysql://localhost:3306/choreo?autoReconnect=true",
-    user: "root",
+    url: "jdbc:sqlserver://localhost:1433;databaseName=choreo",
+    user: "SA",
     loginTimeout: 10000,
     useSsl: false,
     poolSize: 5,

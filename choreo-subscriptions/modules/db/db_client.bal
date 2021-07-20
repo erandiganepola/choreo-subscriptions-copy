@@ -265,25 +265,35 @@ public function addQuotaRecord(QuotaRecord quotaRecord) returns error? {
 # + return - Error if happened during the database insertion
 public function addQuotaRecords(QuotaRecord[] quotaRecords) returns error? {
     log:printDebug("Adding quoto limits to the database", quotaRecords = quotaRecords);
-    sql:ParameterizedQuery[] addQuotaRecordsQuery = from var quotaRecord in quotaRecords select `INSERT INTO
-        quota (tier_id, attribute_name, threshold) values (${quotaRecord?.tier_id}, ${quotaRecord.attribute_name},
-        ${quotaRecord.threshold})`;
-
     boolean isRollbacked = false;
     boolean commitFailed = false;
+
     transaction {
-        var result = dbClient->batchExecute(addQuotaRecordsQuery);
-        if (result is sql:BatchExecuteError) {
-            log:printError("Adding tier quotas to the database failed. This transaction will be rollbacked");
-            isRollbacked = true;
+        foreach QuotaRecord quotaRecord in quotaRecords {
+            sql:ParameterizedQuery addQuotaRecordQuery = `INSERT INTO quota (tier_id, attribute_name, threshold)
+                values (${quotaRecord?.tier_id}, ${quotaRecord.attribute_name}, ${quotaRecord.threshold})`;
+            sql:ExecutionResult|sql:Error result = dbClient->execute(addQuotaRecordQuery);
+
+            if (result is sql:Error) {
+                log:printError("Adding tier quotas to the database failed. This transaction will be rollbacked",
+                    'error = result);
+                isRollbacked = true;
+                break;
+            }
+        }
+
+        if (isRollbacked) {
             rollback;
         } else {
             error? err = commit;
             if (err is error) {
                 log:printError("Error occured while commiting the transaction to add quota limits", 'error = err);
                 commitFailed = true;
+            } else {
+                log:printDebug("Successfully added the quota records to the database");
             }
         }
+        
     }
 
     if (isRollbacked || commitFailed) {
