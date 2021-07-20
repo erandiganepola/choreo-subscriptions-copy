@@ -5,7 +5,6 @@ version = "1.0.0-m1"
 
 [build-options]
 observabilityIncluded = true
-cloud = "docker"
 
 [[platform.java11.dependency]]
 artifactId = "mysql-connector-java"
