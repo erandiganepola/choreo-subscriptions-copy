@@ -12,7 +12,7 @@ function readIntFromEnvVar(string envKey, int defaultVal) returns int {
     string envVarStr = os:getEnv(envKey);
     log:printDebug("Read environment variable", (), {"key": envKey, "value": envVarStr});
     if envVarStr != "" {
-        int|error envVarInt = int:fromString("");
+        int|error envVarInt = int:fromString(envVarStr);
         if envVarInt is int {
             return envVarInt;
         } else {
