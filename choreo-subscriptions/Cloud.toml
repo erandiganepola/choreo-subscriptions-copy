@@ -1,2 +1,4 @@
 [container.image]
 name = "choreo-subscriptions"
+repository= "choreoipaas"
+tag = "1.0.0-m1"
