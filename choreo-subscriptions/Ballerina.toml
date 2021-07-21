@@ -7,7 +7,7 @@ version = "1.0.0-m1"
 observabilityIncluded = true
 
 [[platform.java11.dependency]]
-artifactId = "mysql-connector-java"
+artifactId = "mssql-jdbc"
 version = "8.0.17"
-path = "libs/mysql-connector-java-8.0.17.jar"
-groupId = "mysql"
+path = "libs/mssql-jdbc-9.2.1.jre11.jar"
+groupId = "com.microsoft.sqlserver"
