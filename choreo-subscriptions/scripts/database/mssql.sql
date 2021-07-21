@@ -17,6 +17,7 @@ CREATE TABLE tier (
     created_at DATETIME2(0) DEFAULT GETDATE(),
     PRIMARY KEY (ID)
 );
+GO
 
 CREATE TABLE subscription (
     id VARCHAR(128) NOT NULL,
@@ -26,8 +27,10 @@ CREATE TABLE subscription (
     status VARCHAR(128) NOT NULL,
     created_at DATETIME2(0) DEFAULT GETDATE(),
     PRIMARY KEY (ID),
-    UNIQUE (ORG_ID)
+    UNIQUE (ORG_ID),
+    CONSTRAINT FK_TierSubscription FOREIGN KEY (tier_id) REFERENCES tier(id)
 );
+GO
 
 CREATE TABLE quota (    
     id INTEGER IDENTITY(1,1),
@@ -35,8 +38,10 @@ CREATE TABLE quota (
     attribute_name VARCHAR(256) NOT NULL,
     threshold INTEGER NOT NULL,
     PRIMARY KEY (ID),
-    UNIQUE (TIER_ID, ATTRIBUTE_NAME)
+    UNIQUE (TIER_ID, ATTRIBUTE_NAME),
+    CONSTRAINT FK_TierQuota FOREIGN KEY (tier_id) REFERENCES tier(id)
 );
+GO
 
 CREATE TABLE attribute (
     id VARCHAR(128) NOT NULL,
