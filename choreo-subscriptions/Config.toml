@@ -16,6 +16,3 @@ isClusterConnection = false
 startTls = false
 verifyPeer = false
 database = 0
-
-[ballerina.log]
-level = "DEBUG"
