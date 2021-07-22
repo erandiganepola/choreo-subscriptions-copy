@@ -16,7 +16,7 @@ isolated int hcPrevTimestamp = utils:getTimestampInMillis();
 final int HC_CACHED_TIME_DURATION = config:HC_CACHED_TIME_DURATION;
 
 # Health check endpoint to be used externally
-service /limiter on new http:Listener(9092) {
+service /subscriptions on new http:Listener(9092) {
 
     isolated resource function get healthz(http:Caller caller, http:Request req) {
         int now = utils:getTimestampInMillis();

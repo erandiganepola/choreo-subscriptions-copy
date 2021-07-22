@@ -39,7 +39,7 @@ function init() {
 }
 
 public configurable Database database = {
-    url: "jdbc:sqlserver://localhost:1433;databaseName=choreo-subscriptions-db",
+    url: "jdbc:sqlserver://localhost:1433;databaseName=choreo_subscriptions_db",
     user: "SA",
     loginTimeout: 10000,
     useSsl: false,
