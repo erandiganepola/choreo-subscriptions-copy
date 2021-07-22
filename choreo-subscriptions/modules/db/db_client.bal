@@ -23,10 +23,10 @@ jdbc:Options options = {
 };
 
 jdbc:Client dbClient = check new (
-    config:database.url,
-    config:database.user,
-    config:database?.password,
-    connectionPool = connPool,
+    config:database.url, 
+    config:database.user, 
+    config:database?.password, 
+    connectionPool = connPool, 
     options = options
 );
 
@@ -40,14 +40,14 @@ public function getSubscriptionForOrg(string orgId) returns SubscriptionDAO|erro
         FROM subscription WHERE org_id=${orgId}`;
     stream<record {}, error> subscriptionResult = dbClient->query(subscriptionQuery, SubscriptionDAO);
     stream<SubscriptionDAO, sql:Error> subscriptionStream = <stream<SubscriptionDAO, sql:Error>>subscriptionResult;
-    record {| SubscriptionDAO value; |}|error? subscriptionRecord = subscriptionStream.next();
+    record {|SubscriptionDAO value;|}|error? subscriptionRecord = subscriptionStream.next();
 
     error? closeError = subscriptionResult.close();
     if (closeError is error) {
         log:printWarn("Error while closing database connection", 'error = closeError);
     }
 
-    if (subscriptionRecord is record {| SubscriptionDAO value; |}) {
+    if (subscriptionRecord is record {|SubscriptionDAO value;|}) {
         log:printDebug("Successfully retrieved subscription from the database", orgId = orgId);
         return subscriptionRecord.value;
     } else {
@@ -64,16 +64,16 @@ public function getSubscription(string subscriptionId) returns SubscriptionDAO|e
     log:printDebug("Getting subscription from the database", subscriptionId = subscriptionId);
     sql:ParameterizedQuery subscriptionQuery = `SELECT id, org_id, tier_id, billing_date, status, created_at 
         FROM subscription WHERE id = ${subscriptionId}`;
-    stream<record{}, error> subscriptionResult = dbClient->query(subscriptionQuery, SubscriptionDAO);
+    stream<record {}, error> subscriptionResult = dbClient->query(subscriptionQuery, SubscriptionDAO);
     stream<SubscriptionDAO, sql:Error> subscriptionStream = <stream<SubscriptionDAO, sql:Error>>subscriptionResult;
-    record{| SubscriptionDAO value; |}|sql:Error subscription = subscriptionStream.next();
+    record {|SubscriptionDAO value;|}|sql:Error subscription = subscriptionStream.next();
 
     error? closeErr = subscriptionStream.close();
     if (closeErr is error) {
         log:printWarn("Error while closing database connection.", 'error = closeErr);
     }
 
-    if (subscription is record {| SubscriptionDAO value; |}) {
+    if (subscription is record {|SubscriptionDAO value;|}) {
         log:printDebug("Successfully retrieved subscription from the database", subscriptionId = subscriptionId);
         return <SubscriptionDAO>subscription.value;
     } else {
@@ -90,16 +90,16 @@ public function getAttribute(string attributeId) returns AttributeDAO|error {
     log:printDebug("Getting attribute from the database", attributeId = attributeId);
     sql:ParameterizedQuery attributeQuery = `SELECT id, name, description, created_at FROM attribute WHERE
         id=${attributeId}`;
-    stream<record{}, error> attributeResult = dbClient->query(attributeQuery, AttributeDAO);
+    stream<record {}, error> attributeResult = dbClient->query(attributeQuery, AttributeDAO);
     stream<AttributeDAO, sql:Error> attributeStream = <stream<AttributeDAO, sql:Error>>attributeResult;
-    record {| AttributeDAO value; |}|sql:Error attribute = attributeStream.next();
+    record {|AttributeDAO value;|}|sql:Error attribute = attributeStream.next();
 
     error? closeErr = attributeStream.close();
     if (closeErr is error) {
         log:printWarn("Error while closing database connection.", 'error = closeErr);
     }
 
-    if (attribute is record {| AttributeDAO value; |}) {
+    if (attribute is record {|AttributeDAO value;|}) {
         log:printDebug("Successfully retrieved subscription from the database", attributeId = attributeId);
         return <AttributeDAO>attribute.value;
     } else {
@@ -122,13 +122,13 @@ public function getTier(string tierId) returns Tier|error {
     stream<TierQuotaJoin, sql:Error> tierStream = <stream<TierQuotaJoin, sql:Error>>tierResult;
 
     Tier tier = {};
-    TierQuotas tierQuotas= {};
+    TierQuotas tierQuotas = {};
     int count = 0;
     error? loopError = tierStream.forEach(function(TierQuotaJoin tierQuotaJoin) {
         if (count == 0) {
             tier = {
                 id: tierQuotaJoin.id,
-                name: tierQuotaJoin.name,   
+                name: tierQuotaJoin.name,
                 description: tierQuotaJoin.description,
                 cost: tierQuotaJoin.cost,
                 created_at: tierQuotaJoin.created_at
@@ -140,11 +140,11 @@ public function getTier(string tierId) returns Tier|error {
 
     error? closeErr = tierStream.close();
     if (closeErr is error) {
-        log:printWarn("Error occured while closing database connection.", 'error=closeErr);
+        log:printWarn("Error occured while closing database connection.", 'error = closeErr);
     }
 
     if (loopError is error) {
-        log:printError("Error occured while retrieving tier from the database.", tierId=tierId, 'error=loopError);
+        log:printError("Error occured while retrieving tier from the database.", tierId = tierId, 'error = loopError);
         return loopError;
     } else {
         tier.quota_limits = tierQuotas;
@@ -161,7 +161,7 @@ public function getTierQuotas(string tierId) returns TierQuotas|error {
     log:printDebug("Getting tier quotas from the database", tierId = tierId);
     TierQuotas tierQuotas = {};
     sql:ParameterizedQuery quotaQuery = `SELECT attribute_name, threshold FROM quota WHERE tier_id=${tierId}`;
-    stream<record{}, error> quotaResult = dbClient->query(quotaQuery, QuotaRecord);
+    stream<record {}, error> quotaResult = dbClient->query(quotaQuery, QuotaRecord);
     stream<QuotaRecord, sql:Error> tierQuotasStream = <stream<QuotaRecord, sql:Error>>quotaResult;
 
     error? loopError = tierQuotasStream.forEach(function(QuotaRecord quotaRecord) {
@@ -170,11 +170,11 @@ public function getTierQuotas(string tierId) returns TierQuotas|error {
 
     error? closeErr = quotaResult.close();
     if (closeErr is error) {
-        log:printWarn("Error while closing connection.", 'error=closeErr);
+        log:printWarn("Error while closing connection.", 'error = closeErr);
     }
 
     if (loopError is error) {
-        log:printError("Error retrieving quota from the database.", tierId=tierId, 'error=loopError);
+        log:printError("Error retrieving quota from the database.", tierId = tierId, 'error = loopError);
         return loopError;
     } else {
         log:printDebug("Successfully retrieved tier limits from the database", tierId = tierId);
@@ -212,11 +212,11 @@ public function addSubscription(SubscriptionDAO subscription) returns error? {
     sql:ExecutionResult|sql:Error result = dbClient->execute(addSubscriptionQuery);
 
     if (result is sql:Error) {
-        log:printError("Error while creating subscription.", org_id = subscription.org_id,
+        log:printError("Error while creating subscription.", org_id = subscription.org_id, 
             tier_id = subscription.tier_id, 'error = result);
         return result;
     } else {
-        log:printDebug("Successfully created the subscription in database.", org_id = subscription.org_id,
+        log:printDebug("Successfully created the subscription in database.", org_id = subscription.org_id, 
             tier_id = subscription.tier_id);
     }
 }
@@ -250,11 +250,11 @@ public function addQuotaRecord(QuotaRecord quotaRecord) returns error? {
     sql:ExecutionResult|sql:Error result = dbClient->execute(addAttributeRecordQuery);
 
     if (result is sql:Error) {
-        log:printError("Error while adding attribute to quota.", name = quotaRecord.attribute_name,
+        log:printError("Error while adding attribute to quota.", name = quotaRecord.attribute_name, 
             tier_id = quotaRecord?.tier_id, 'error = result);
         return result;
     } else {
-        log:printDebug("Successfully added new attribute to quota.", name = quotaRecord.attribute_name,
+        log:printDebug("Successfully added new attribute to quota.", name = quotaRecord.attribute_name, 
             tier_id = quotaRecord?.tier_id);
     }
 }
@@ -275,7 +275,7 @@ public function addQuotaRecords(QuotaRecord[] quotaRecords) returns error? {
             sql:ExecutionResult|sql:Error result = dbClient->execute(addQuotaRecordQuery);
 
             if (result is sql:Error) {
-                log:printError("Adding tier quotas to the database failed. This transaction will be rollbacked",
+                log:printError("Adding tier quotas to the database failed. This transaction will be rollbacked", 
                     'error = result);
                 isRollbacked = true;
                 break;
@@ -293,7 +293,7 @@ public function addQuotaRecords(QuotaRecord[] quotaRecords) returns error? {
                 log:printDebug("Successfully added the quota records to the database");
             }
         }
-        
+
     }
 
     if (isRollbacked || commitFailed) {
