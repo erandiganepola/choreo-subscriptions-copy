@@ -24,7 +24,7 @@ function testGetEntry() {
 }
 function testSetEntry() {
     string orgId = "0000";
-    string tier =  "{\"integration\": 10, \"service\": 10 }";
+    string tier = "{\"integration\": 10, \"service\": 10 }";
     cacheClient = test:mock(redis:Client);
     test:prepare(cacheClient).when("set").thenReturn(returnCachedValueForSet());
     string|error? result = setEntry(orgId, tier);
