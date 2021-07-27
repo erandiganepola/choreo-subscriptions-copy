@@ -31,12 +31,12 @@ Subscription service uses MSSQL database to persist the subscription information
 
 #### Configurations
 There are two ways to provide the configurations for the service
-1. You can directly add the configurations to the default configuraton file can be found at `Choreo_Subscriptions_Home/choreo-subscriptions/Config.toml`. Then build the with the modified configurations.
+1. You can directly add the configurations to the default configuraton file can be found at `Choreo_Subscriptions_Home/choreo-subscriptions/Config.toml`. Then build the service with the modified configurations.
 
 2. You can take a copy of the configuration file resides in `Choreo_Subscriptions_Home/choreo-subscriptions/Config.toml` and do the modifications and provide the path of the modified file as an envrionment variable with the key of `BAL_CONFIG_FILES`
 
 #### Secret Configurations
-The credentials for the MSSQL Server and Redis Cache are not provided via the config file to avoid them keeping there in plain text format. Hence you have to set the following two environment variable keys to the password of MSSQL Server and Redis Cache.
+The credentials for the MSSQL Server and Redis Cache are not provided via the config file to avoid keeping them there in plain text format. Hence you have to set the following two environment variable keys to the password of MSSQL Server and Redis Cache.
 
 ```
 DB_PASSWORD=<MSSQL Server Password>
@@ -46,7 +46,7 @@ CACHE_PASSWORD=<Redis Cache Password>
 #### Run
 After completing the above configurations you can start the service with one of the following commands.
 ```
-bal run <path to build jar file>
-java -jar <path to build jar file>
+bal run <path to jar file>
+java -jar <path to jar file>
 ```
 `ex: bal run choreo-subscriptions/target/bin/choreo-subscriptions.jar`
