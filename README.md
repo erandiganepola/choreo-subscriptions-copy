@@ -42,6 +42,21 @@ The credentials for the MSSQL Server and Redis Cache are not provided via the co
 DB_PASSWORD=<MSSQL Server Password>
 CACHE_PASSWORD=<Redis Cache Password>
 ```
+#### Database initialization
+In order to create the required schemas in the database, navigate to `Choreo_Subscriptions_Home/choreo-subscriptions/scripts/database` and execute the following command
+
+`sqlcmd -S <database host name> -U <database user name> -i mssql.sql`
+Provide the corresponding database password when prompted.
+
+For example with default configurations:
+`sqlcmd -S localhost -U SA -i mssql.sql`
+
+Now the schemas would have been generated. In order to invoke the endpoints and test we should have some tiers and subscriptions created in the database. To do that execute the following command from the same directory.
+
+`sqlcmd -S <database host name> -U <database user name> -i sample-data.sql`
+Provide the corresponding database password when prompted.
+
+Now organization ids `0000` and `1111` will be available with Free Tier and Enterprise Tier subscriptions respectively.
 
 #### Run
 After completing the above configurations you can start the service with one of the following commands.
@@ -50,3 +65,56 @@ bal run <path to jar file>
 java -jar <path to jar file>
 ```
 `ex: bal run choreo-subscriptions/target/bin/choreo-subscriptions.jar`
+
+You will get the following logs printed when the service starts successfully.
+
+```
+[ballerina/http] started HTTP/WS listener 172.19.0.1:39133
+[ballerina/grpc] started HTTP/WS listener 0.0.0.0:9090
+[ballerina/http] started HTTP/WS listener 0.0.0.0:9092
+[ballerina/http] started HTTP/WS listener 0.0.0.0:9091
+```
+
+The gRPC protofiles for the service can be found [here](https://github.com/wso2-enterprise/choreo-api/tree/main/choreo/service/subscriptions/v1).
+
+You can construct the request using those protofiles and test the service. These tools [grpcurl](https://github.com/fullstorydev/grpcurl), [BloomRPC](https://github.com/uw-labs/bloomrpc) might be useful to acheive this. Follow these steps to trigger a gRPC endpoint.
+
+1. Clone the proto [repository](https://github.com/wso2-enterprise/choreo-api). Here onwards will refer the cloned root directory as `Choreo_Api_Home`.
+
+2. Navigate to `Choreo_Api_Home/choreo/service/subscription/v1`.
+
+3. Execute the following command
+
+```sh
+grpcurl -plaintext \
+    -proto subscriptions.proto \
+    -import-path . \
+    -d '{ "org_id": "0000" }' \
+    localhost:9090 choreo.service.subscriptions.v1.SubscriptionService/GetTierDetails
+```
+Successful invocation will return a similar response to the following.
+
+```json
+{
+  "tier": {
+    "id": "0000",
+    "name": "Free Tier",
+    "description": "Free allocation to tryout choreo",
+    "cost": "0$ per Month",
+    "createdAt": "2021-07-22 08:28:09.0",
+    "serviceQuota": 10,
+    "integrationQuota": 10,
+    "apiQuota": 20,
+    "remoteAppQuota": 10
+  }
+}
+```
+
+## Health Checks
+
+Following endpoints can be used for the health check purposes in subscription service.
+
+```sh
+curl http://localhost:9091/readiness
+curl http://localhost:9091/liveness
+curl http://localhost:9092/subscriptions/healthz
