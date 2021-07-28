@@ -17,12 +17,16 @@ function readIntFromEnvVar(string envKey, int defaultVal) returns int {
             return envVarInt;
         } else {
             log:printError("Invalid value for environment variable. Continue with default value", envVarInt, {
-                "key": envKey, "value": envVarStr, "default_value": defaultVal
+                "key": envKey,
+                "value": envVarStr,
+                "default_value": defaultVal
             });
         }
     }
     log:printDebug("Get default value instead of environment variable", (), {
-        "key": envKey, "value": envVarStr, "default_value": defaultVal
+        "key": envKey,
+        "value": envVarStr,
+        "default_value": defaultVal
     });
     return defaultVal;
 }

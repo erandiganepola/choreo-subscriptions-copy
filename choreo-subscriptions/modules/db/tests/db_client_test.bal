@@ -79,7 +79,7 @@ function testGetAttribute() {
 }
 
 @test:Config {
-    groups:["db"]
+    groups: ["db"]
 }
 function testGetTier() {
     string tierId = "0000";
@@ -90,7 +90,7 @@ function testGetTier() {
 }
 
 @test:Config {
-    groups:["db"]
+    groups: ["db"]
 }
 function testGetTierQuotas() {
     string tierId = "0000";
@@ -123,17 +123,18 @@ function returnMockedAttributeDAOStream() returns stream<AttributeDAO, error> {
 class TierQuotasStreamImplementor {
     private int index = 0;
     private QuotaRecord[] currentEntries = [
-        {attribute_name: "service_quota", threshold : 10},
-        {attribute_name: "integration_quota", threshold: 15},
-        {attribute_name: "api_quota", threshold : 20},
+        {attribute_name: "service_quota", threshold: 10}, 
+        {attribute_name: "integration_quota", threshold: 15}, 
+        {attribute_name: "api_quota", threshold: 20}, 
         {attribute_name: "remote_app_quota", threshold: 10}
     ];
 
-    isolated function init() {}
+    isolated function init() {
+    }
 
-    public isolated function next() returns record {| QuotaRecord value; |}|error? {       
+    public isolated function next() returns record {|QuotaRecord value;|}|error? {
         if (self.index < self.currentEntries.length()) {
-            record {| QuotaRecord value; |} quotaRecord = {value: self.currentEntries[self.index]};
+            record {|QuotaRecord value;|} quotaRecord = {value: self.currentEntries[self.index]};
             self.index += 1;
             return quotaRecord;
         }
@@ -150,7 +151,7 @@ class TierQuotaJoinStreamImplementor {
         created_at: "2021-07-13 12:58:15",
         attribute_name: "service_quota",
         threshold: 10
-    },
+    }, 
     {
         id: "0ccca02-643a43ae-a38-200f2b",
         name: "Free Tier",
@@ -159,7 +160,7 @@ class TierQuotaJoinStreamImplementor {
         created_at: "2021-07-13 12:58:15",
         attribute_name: "integration_quota",
         threshold: 15
-    },
+    }, 
     {
         id: "0ccca02-643a43ae-a38-200f2b",
         name: "Free Tier",
@@ -168,7 +169,7 @@ class TierQuotaJoinStreamImplementor {
         created_at: "2021-07-13 12:58:15",
         attribute_name: "api_quota",
         threshold: 20
-    },
+    }, 
     {
         id: "0ccca02-643a43ae-a38-200f2b",
         name: "Free Tier",
@@ -179,11 +180,12 @@ class TierQuotaJoinStreamImplementor {
         threshold: 10
     }];
 
-    isolated function init() {}
+    isolated function init() {
+    }
 
-    public isolated function next() returns record {| TierQuotaJoin value; |}|error? {       
+    public isolated function next() returns record {|TierQuotaJoin value;|}|error? {
         if (self.index < self.currentEntries.length()) {
-            record {| TierQuotaJoin value; |} tierQuotaJoin = {value: self.currentEntries[self.index]};
+            record {|TierQuotaJoin value;|} tierQuotaJoin = {value: self.currentEntries[self.index]};
             self.index += 1;
             return tierQuotaJoin;
         }
@@ -201,11 +203,12 @@ class SubscriptionDAOStreamImplementor {
         created_at: "2021-07-13 22:32:42.0"
     }];
 
-    isolated function init() {}
+    isolated function init() {
+    }
 
-    public isolated function next() returns record {| SubscriptionDAO value; |}|error? {
+    public isolated function next() returns record {|SubscriptionDAO value;|}|error? {
         if (self.index < self.currentEntries.length()) {
-            record {| SubscriptionDAO value; |} subscriptionDAO = {value: self.currentEntries[self.index]};
+            record {|SubscriptionDAO value;|} subscriptionDAO = {value: self.currentEntries[self.index]};
             self.index += 1;
             return subscriptionDAO;
         }
@@ -221,11 +224,12 @@ class AttributeDAOStreamImplementor {
         created_at: "2021-07-13 12:58:15"
     }];
 
-    isolated function init() {}
+    isolated function init() {
+    }
 
-    public isolated function next() returns record {| AttributeDAO value; |}|error? {
+    public isolated function next() returns record {|AttributeDAO value;|}|error? {
         if (self.index < self.currentEntries.length()) {
-            record {| AttributeDAO value; |} attributeDAO = {value: self.currentEntries[self.index]};
+            record {|AttributeDAO value;|} attributeDAO = {value: self.currentEntries[self.index]};
             self.index += 1;
             return attributeDAO;
         }
