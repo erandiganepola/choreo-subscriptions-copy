@@ -26,10 +26,10 @@ jdbc:Client dbClient = check getClient();
 
 function getClient() returns jdbc:Client|error {
     return new (
-        config:database.url,
-        config:database.user,
-        config:database?.password,
-        connectionPool = connPool,
+        config:database.url, 
+        config:database.user, 
+        config:database?.password, 
+        connectionPool = connPool, 
         options = options
     );
 }

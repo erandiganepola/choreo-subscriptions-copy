@@ -41,7 +41,7 @@ AttributeDAO mockAttributeDAO = {
 };
 
 @test:Mock {
-  functionName: "getClient"
+    functionName: "getClient"
 }
 function getMockClient() returns jdbc:Client|error {
     return test:mock(jdbc:Client);
