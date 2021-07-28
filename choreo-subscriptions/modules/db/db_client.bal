@@ -22,13 +22,17 @@ jdbc:Options options = {
     }
 };
 
-jdbc:Client dbClient = check new (
-    config:database.url, 
-    config:database.user, 
-    config:database?.password, 
-    connectionPool = connPool, 
-    options = options
-);
+jdbc:Client dbClient = check getClient();
+
+function getClient() returns jdbc:Client|error {
+    return new (
+        config:database.url, 
+        config:database.user, 
+        config:database?.password, 
+        connectionPool = connPool, 
+        options = options
+    );
+}
 
 # Retrieve the subscription for the given organization from the DB
 #

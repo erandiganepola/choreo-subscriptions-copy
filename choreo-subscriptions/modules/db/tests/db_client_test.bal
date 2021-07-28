@@ -40,6 +40,13 @@ AttributeDAO mockAttributeDAO = {
     created_at: "2021-07-13 12:58:15"
 };
 
+@test:Mock {
+    functionName: "getClient"
+}
+function getMockClient() returns jdbc:Client|error {
+    return test:mock(jdbc:Client);
+}
+
 @test:Config {
     groups: ["db"]
 }
@@ -55,7 +62,6 @@ function testGetSubscriptionForOrg() {
     groups: ["db"]
 }
 function testGetSubscription() {
-    dbClient = test:mock(jdbc:Client);
     test:prepare(dbClient).when("query").thenReturn(returnMockedSubscriptionDAOStream());
     SubscriptionDAO|error result = getSubscription("0000");
 
@@ -66,7 +72,6 @@ function testGetSubscription() {
     groups: ["db"]
 }
 function testGetAttribute() {
-    dbClient = test:mock(jdbc:Client);
     test:prepare(dbClient).when("query").thenReturn(returnMockedAttributeDAOStream());
     AttributeDAO|error result = getAttribute("0000");
 
@@ -78,7 +83,6 @@ function testGetAttribute() {
 }
 function testGetTier() {
     string tierId = "0000";
-    dbClient = test:mock(jdbc:Client);
     test:prepare(dbClient).when("query").thenReturn(returnMockedTierQuotaJoinStream());
     Tier|error result = getTier(tierId);
 
@@ -90,7 +94,6 @@ function testGetTier() {
 }
 function testGetTierQuotas() {
     string tierId = "0000";
-    dbClient = test:mock(jdbc:Client);
     test:prepare(dbClient).when("query").thenReturn(returnMockedTierQuotasStream());
     TierQuotas|error result = getTierQuotas(tierId);
 
