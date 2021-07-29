@@ -10,17 +10,17 @@ Choreo Subscriptions microservice is the interface to retrieve and manipulate Ch
 
 ## Developer Guide
 This section explains the required steps for running and testing this service locally.
-First clone this repository and get into the root directory. Here onwards the root directory will be referred as `Choreo_Subscriptions_Home`.
+First clone this repository and get into the root directory. Here onwards the root directory will be referred as `CHOREO_SUBS_HOME`.
 
 ### Test
-In order to run the unit tests execute the following command from `Choreo_Subscriptions_Home`.
+In order to run the unit tests execute the following command from `CHOREO_SUBS_HOME`.
 
 ```sh
 make test
 ```
 
 ### Build Locally
-In order to build the service execute the following command from `Choreo_Subscriptions_Home`.
+In order to build the service execute the following command from `CHOREO_SUBS_HOME`.
 
 ```sh
 make build
@@ -31,9 +31,9 @@ Subscription service uses MSSQL database to persist the subscription information
 
 #### Configurations
 There are two ways to provide the configurations for the service
-1. You can directly add the configurations to the default configuraton file can be found at `Choreo_Subscriptions_Home/choreo-subscriptions/Config.toml`. Then build the service with the modified configurations.
+1. You can directly add the configurations to the default configuraton file can be found at `CHOREO_SUBS_HOME/choreo-subscriptions/Config.toml`. Then build the service with the modified configurations.
 
-2. You can take a copy of the configuration file resides in `Choreo_Subscriptions_Home/choreo-subscriptions/Config.toml` and do the modifications and provide the path of the modified file as an envrionment variable with the key of `BAL_CONFIG_FILES`
+2. You can take a copy of the configuration file resides in `CHOREO_SUBS_HOME/choreo-subscriptions/Config.toml` and do the modifications and provide the path of the modified file as an environment variable with the key of `BAL_CONFIG_FILES`
 
 #### Secret Configurations
 The credentials for the MSSQL Server and Redis Cache are not provided via the config file to avoid keeping them there in plain text format. Hence you have to set the following two environment variable keys to the password of MSSQL Server and Redis Cache.
@@ -43,7 +43,7 @@ DB_PASSWORD=<MSSQL Server Password>
 CACHE_PASSWORD=<Redis Cache Password>
 ```
 #### Database initialization
-In order to create the required schemas in the database, navigate to `Choreo_Subscriptions_Home/choreo-subscriptions/scripts/database` and execute the following command
+In order to create the required schemas in the database, navigate to `CHOREO_SUBS_HOME/choreo-subscriptions/scripts/database` and execute the following command
 
 `sqlcmd -S <database host name> -U <database user name> -i mssql.sql`
 Provide the corresponding database password when prompted.
@@ -75,13 +75,13 @@ You will get the following logs printed when the service starts successfully.
 [ballerina/http] started HTTP/WS listener 0.0.0.0:9091
 ```
 
-The gRPC protofiles for the service can be found [here](https://github.com/wso2-enterprise/choreo-api/tree/main/choreo/service/subscriptions/v1).
+The gRPC proto files for the service can be found [here](https://github.com/wso2-enterprise/choreo-api/tree/main/choreo/service/subscriptions/v1).
 
-You can construct the request using those protofiles and test the service. These tools [grpcurl](https://github.com/fullstorydev/grpcurl), [BloomRPC](https://github.com/uw-labs/bloomrpc) might be useful to acheive this. Follow these steps to trigger a gRPC endpoint.
+You can construct the request using those proto files and test the service. These tools [grpcurl](https://github.com/fullstorydev/grpcurl), [BloomRPC](https://github.com/uw-labs/bloomrpc) might be useful to acheive this. Follow these steps to trigger a gRPC endpoint.
 
-1. Clone the proto [repository](https://github.com/wso2-enterprise/choreo-api). Here onwards will refer the cloned root directory as `Choreo_Api_Home`.
+1. Clone the proto [repository](https://github.com/wso2-enterprise/choreo-api). Here onwards will refer the cloned root directory as `CHOREO_API_HOME`.
 
-2. Navigate to `Choreo_Api_Home/choreo/service/subscription/v1`.
+2. Navigate to `CHOREO_API_HOME/choreo/service/subscription/v1`.
 
 3. Execute the following command
 
