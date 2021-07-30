@@ -6,8 +6,8 @@ INSERT INTO choreo_subscriptions_db.dbo.[attribute] (id,name,description,created
 GO
 
 INSERT INTO choreo_subscriptions_db.dbo.tier (id,name,description,cost,created_at) VALUES
-	 (N'01ebea3a-7735-10be-b3c0-ba95f991e877',N'Free Tier',N'Free tier to tryout choreo',N'0 $ per month','2021-07-21 08:35:27'),
-	 (N'01ebea43-be76-1d7a-b410-2d1b873c57af',N'Enterprise Tier',N'Tier for enterprise users',N'1000 $ per month','2021-07-21 08:48:54');
+	 (N'01ebea3a-7735-10be-b3c0-ba95f991e877',N'Free Tier',N'Free tier to tryout choreo',0,'2021-07-21 08:35:27'),
+	 (N'01ebea43-be76-1d7a-b410-2d1b873c57af',N'Enterprise Tier',N'Tier for enterprise users',1000,'2021-07-21 08:48:54');
 GO
 
 INSERT INTO choreo_subscriptions_db.dbo.quota (tier_id,attribute_name,threshold) VALUES

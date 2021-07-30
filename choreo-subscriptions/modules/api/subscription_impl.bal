@@ -180,7 +180,7 @@ function getTierForOrgFromCache(string orgId) returns GetTierDetailResponse|erro
                     id: (check tierJson.id).toString(),
                     name: (check tierJson.name).toString(),
                     description: (check tierJson.description).toString(),
-                    cost: (check tierJson.cost).toString(),
+                    cost: check tierJson.cost,
                     created_at: (check tierJson.created_at).toString(),
                     integration_quota: <int>(check tierJson.integration_quota),
                     service_quota: <int>(check tierJson.service_quota),

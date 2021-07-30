@@ -26,7 +26,7 @@ public type TierDAO record {|
     string id?;
     string name;
     string description;
-    string cost;
+    float cost;
     string created_at?;
 |};
 
@@ -34,7 +34,7 @@ public type Tier record {|
     string id?;
     string name = "";
     string description = "";
-    string cost = "";
+    float cost = 0.0;
     string created_at = "";  
     TierQuotas quota_limits?;
 |};
@@ -43,7 +43,7 @@ public type TierQuotaJoin record {|
     string id;
     string name;
     string description;
-    string cost;
+    float cost;
     string created_at;
     string attribute_name;
     int threshold;

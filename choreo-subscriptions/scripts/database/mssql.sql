@@ -19,7 +19,7 @@ BEGIN
         id VARCHAR(128) NOT NULL,
         name VARCHAR(256) NOT NULL,
         description VARCHAR(1024) NOT NULL,
-        cost VARCHAR(256) NOT NULL,
+        cost FLOAT NOT NULL,
         created_at DATETIME2(0) DEFAULT GETDATE(),
         PRIMARY KEY (ID)
     );

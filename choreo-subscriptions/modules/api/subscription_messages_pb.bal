@@ -14,7 +14,7 @@ public type Tier record {|
     string id = "";
     string name = "";
     string description = "";
-    string cost = "";
+    float cost = 0.0;
     string created_at = "";
     int service_quota = 0;
     int integration_quota = 0;

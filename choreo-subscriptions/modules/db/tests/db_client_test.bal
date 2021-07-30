@@ -19,7 +19,7 @@ Tier mockTier = {
     id: "0ccca02-643a43ae-a38-200f2b",
     name: "Free Tier",
     description: "Free allocation to tryout choreo",
-    cost: "0$ per Month",
+    cost: 0.0,
     created_at: "2021-07-13 12:58:15",
     quota_limits: mockTierQuotas
 };
@@ -143,7 +143,7 @@ class TierQuotaJoinStreamImplementor {
         id: "0ccca02-643a43ae-a38-200f2b",
         name: "Free Tier",
         description: "Free allocation to tryout choreo",
-        cost: "0$ per Month",
+        cost: 0.0,
         created_at: "2021-07-13 12:58:15",
         attribute_name: "service_quota",
         threshold: 10
@@ -152,7 +152,7 @@ class TierQuotaJoinStreamImplementor {
         id: "0ccca02-643a43ae-a38-200f2b",
         name: "Free Tier",
         description: "Free allocation to tryout choreo",
-        cost: "0$ per Month",
+        cost: 0.0,
         created_at: "2021-07-13 12:58:15",
         attribute_name: "integration_quota",
         threshold: 15
@@ -161,7 +161,7 @@ class TierQuotaJoinStreamImplementor {
         id: "0ccca02-643a43ae-a38-200f2b",
         name: "Free Tier",
         description: "Free allocation to tryout choreo",
-        cost: "0$ per Month",
+        cost: 0.0,
         created_at: "2021-07-13 12:58:15",
         attribute_name: "api_quota",
         threshold: 20
@@ -170,7 +170,7 @@ class TierQuotaJoinStreamImplementor {
         id: "0ccca02-643a43ae-a38-200f2b",
         name: "Free Tier",
         description: "Free allocation to tryout choreo",
-        cost: "0$ per Month",
+        cost: 0.0,
         created_at: "2021-07-13 12:58:15",
         attribute_name: "remote_app_quota",
         threshold: 10
