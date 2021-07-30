@@ -10,7 +10,6 @@ import ballerina/uuid;
 import choreo_subscriptions.db;
 import choreo_subscriptions.cache;
 
-
 # Returns the subscribed tier object for the given organization
 #
 # + orgId - Id of the interested organization
@@ -48,18 +47,30 @@ public function createTier(CreateTierRequest createTierRequest) returns CreateTi
             rollback;
         } else {
             db:QuotaRecord[] quotaRecords = [];
-            quotaRecords[0] = { tier_id: uuid, attribute_name: "service_quota",
-                threshold: createTierRequest.tier.service_quota };
-            quotaRecords[1] = { tier_id: uuid, attribute_name: "integration_quota",
-                threshold: createTierRequest.tier.integration_quota };
-            quotaRecords[2] = { tier_id: uuid, attribute_name: "api_quota",
-                threshold: createTierRequest.tier.api_quota };
-            quotaRecords[3] = { tier_id: uuid, attribute_name: "remote_app_quota",
-                threshold: createTierRequest.tier.remote_app_quota };
+            quotaRecords[0] = {
+                tier_id: uuid,
+                attribute_name: "service_quota",
+                threshold: createTierRequest.tier.service_quota
+            };
+            quotaRecords[1] = {
+                tier_id: uuid,
+                attribute_name: "integration_quota",
+                threshold: createTierRequest.tier.integration_quota
+            };
+            quotaRecords[2] = {
+                tier_id: uuid,
+                attribute_name: "api_quota",
+                threshold: createTierRequest.tier.api_quota
+            };
+            quotaRecords[3] = {
+                tier_id: uuid,
+                attribute_name: "remote_app_quota",
+                threshold: createTierRequest.tier.remote_app_quota
+            };
 
             error? resultAddTierQuotas = db:addQuotaRecords(quotaRecords);
             if (resultAddTierQuotas is error) {
-                log:printError("Error occured while adding the tier quota limits to database",
+                log:printError("Error occured while adding the tier quota limits to database", 
                     quotaRecords = quotaRecords, 'error = resultAddTierQuotas);
                 isRollbacked = true;
                 rollback;
@@ -93,7 +104,7 @@ public function createTier(CreateTierRequest createTierRequest) returns CreateTi
                     api_quota: <int>tier?.quota_limits?.api_quota,
                     remote_app_quota: <int>tier?.quota_limits?.remote_app_quota
                 }
-            }; 
+            };
         }
         return createTierResponse;
     }
@@ -103,7 +114,7 @@ public function createTier(CreateTierRequest createTierRequest) returns CreateTi
 #
 # + createSubscriptionRequest - The subscription object need to be created
 # + return - created subscription object
-public function createSubscription(CreateSubscriptionRequest createSubscriptionRequest) returns
+public function createSubscription(CreateSubscriptionRequest createSubscriptionRequest) returns 
         CreateSubscriptionResponse|error {
     string uuid = uuid:createType1AsString();
     db:SubscriptionDAO subscriptionDAOin = {
@@ -113,7 +124,7 @@ public function createSubscription(CreateSubscriptionRequest createSubscriptionR
         billing_date: createSubscriptionRequest.subscription.billing_date,
         status: createSubscriptionRequest.subscription.status
     };
-    
+
     error? result = db:addSubscription(subscriptionDAOin);
     if (result is error) {
         return result;
@@ -191,7 +202,7 @@ function getTierForOrgFromCache(string orgId) returns GetTierDetailResponse|erro
             return getTierDetailResponse;
         } else {
             log:printError("Error while parsing cached value to tier object.", cache = tierString, 'error = tierJson);
-            return tierJson;    
+            return tierJson;
         }
     } else {
         return error("Subscription corresponding to the organization id not available in the cache", orgId = orgId);
@@ -216,12 +227,12 @@ function getTierForOrgFromDB(string orgId) returns GetTierDetailResponse|error {
                 remote_app_quota: <int>tier?.quota_limits?.remote_app_quota
             };
             string|error entry = cache:setEntry(orgId, tierDTO.toString());
-            GetTierDetailResponse getTierDetailResponse = { tier: tierDTO };
+            GetTierDetailResponse getTierDetailResponse = {tier: tierDTO};
             return getTierDetailResponse;
         } else {
             return tier;
         }
     } else {
         return subscriptionDAO;
-    } 
+    }
 }

@@ -35,10 +35,10 @@ public type Tier record {|
     string name = "";
     string description = "";
     float cost = 0.0;
-    string created_at = "";  
+    string created_at = "";
     TierQuotas quota_limits?;
 |};
-    
+
 public type TierQuotaJoin record {|
     string id;
     string name;
