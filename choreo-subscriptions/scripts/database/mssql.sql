@@ -5,12 +5,12 @@
 -- herein in any form is strictly forbidden, unless permitted by WSO2 expressly.
 -- You may not alter or remove any copyright or other notice from copies of this content.
 
-IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = 'choreo-subscriptions-db')
+IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = 'choreo_subscriptions_db')
     BEGIN
-        CREATE DATABASE choreo-subscriptions-db;
+        CREATE DATABASE choreo_subscriptions_db;
     END
 GO
-USE choreo-subscriptions-db;
+USE choreo_subscriptions_db;
 GO
 
 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='tier' and xtype='U')
@@ -44,7 +44,7 @@ GO
 
 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='quota' and xtype='U')
 BEGIN
-    CREATE TABLE quota (    
+    CREATE TABLE quota (
         id INTEGER IDENTITY(1,1),
         tier_id VARCHAR(128) NOT NULL,
         attribute_name VARCHAR(256) NOT NULL,
