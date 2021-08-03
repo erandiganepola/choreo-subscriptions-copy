@@ -26,16 +26,16 @@ public type TierDAO record {|
     string id?;
     string name;
     string description;
-    float cost;
-    string created_at?;
+    int cost;
+    int created_at?;
 |};
 
 public type Tier record {|
     string id?;
     string name = "";
     string description = "";
-    float cost = 0.0;
-    string created_at = "";
+    int cost = 0;
+    int created_at = 0;
     TierQuotas quota_limits?;
 |};
 
@@ -43,8 +43,8 @@ public type TierQuotaJoin record {|
     string id;
     string name;
     string description;
-    float cost;
-    string created_at;
+    int cost;
+    int created_at;
     string attribute_name;
     int threshold;
 |};
@@ -53,14 +53,14 @@ public type SubscriptionDAO record {|
     string id?;
     string org_id;
     string tier_id;
-    string billing_date;
+    int billing_date;
     string status;
-    string created_at?;
+    int created_at?;
 |};
 
 public type AttributeDAO record {|
     string id?;
     string name;
     string description;
-    string created_at?;
+    int created_at?;
 |};

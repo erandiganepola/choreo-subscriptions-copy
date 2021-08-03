@@ -98,7 +98,7 @@ public function createTier(CreateTierRequest createTierRequest) returns CreateTi
                     name: tier.name,
                     description: tier.description,
                     cost: tier.cost,
-                    created_at: <string>tier?.created_at,
+                    created_at: <int>tier?.created_at,
                     service_quota: <int>tier?.quota_limits?.service_quota,
                     integration_quota: <int>tier?.quota_limits?.integration_quota,
                     api_quota: <int>tier?.quota_limits?.api_quota,
@@ -138,7 +138,7 @@ public function createSubscription(CreateSubscriptionRequest createSubscriptionR
                     tier_id: subscriptionDAOOut.tier_id,
                     billing_date: subscriptionDAOOut.billing_date,
                     status: subscriptionDAOOut.status,
-                    created_at: <string>subscriptionDAOOut?.created_at
+                    created_at: <int>subscriptionDAOOut?.created_at
                 }
             };
             return createSubscriptionResponse;
@@ -171,7 +171,7 @@ public function createAttribute(CreateAttributeRequest createAttributeRequest) r
                     id: <string>attributeDAOOut?.id,
                     name: attributeDAOOut.name,
                     description: attributeDAOOut.description,
-                    created_at: <string>attributeDAOOut?.created_at
+                    created_at: <int>attributeDAOOut?.created_at
                 }
             };
             return createAttributeResponse;
@@ -192,7 +192,7 @@ function getTierForOrgFromCache(string orgId) returns GetTierDetailResponse|erro
                     name: (check tierJson.name).toString(),
                     description: (check tierJson.description).toString(),
                     cost: check tierJson.cost,
-                    created_at: (check tierJson.created_at).toString(),
+                    created_at: <int>(check tierJson.created_at),
                     integration_quota: <int>(check tierJson.integration_quota),
                     service_quota: <int>(check tierJson.service_quota),
                     api_quota: <int>(check tierJson.api_quota),
@@ -220,7 +220,7 @@ function getTierForOrgFromDB(string orgId) returns GetTierDetailResponse|error {
                 name: tier.name,
                 description: tier.description,
                 cost: tier.cost,
-                created_at: <string>tier?.created_at,
+                created_at: <int>tier?.created_at,
                 service_quota: <int>tier?.quota_limits?.service_quota,
                 integration_quota: <int>tier?.quota_limits?.integration_quota,
                 api_quota: <int>tier?.quota_limits?.api_quota,

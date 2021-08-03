@@ -19,8 +19,8 @@ BEGIN
         id VARCHAR(128) NOT NULL,
         name VARCHAR(256) NOT NULL,
         description VARCHAR(1024) NOT NULL,
-        cost FLOAT NOT NULL,
-        created_at DATETIME2(0) DEFAULT GETDATE(),
+        cost INTEGER NOT NULL,
+        created_at BIGINT DEFAULT DATEDIFF_BIG(MILLISECOND,'1970-01-01 00:00:00.000', SYSUTCDATETIME()),
         PRIMARY KEY (ID)
     );
 END
@@ -32,9 +32,9 @@ BEGIN
         id VARCHAR(128) NOT NULL,
         org_id VARCHAR(128) NOT NULL,
         tier_id VARCHAR(128) NOT NULL,
-        billing_date DATETIME2(0) NOT NULL,
+        billing_date BIGINT DEFAULT DATEDIFF_BIG(MILLISECOND,'1970-01-01 00:00:00.000', SYSUTCDATETIME()),
         status VARCHAR(128) NOT NULL,
-        created_at DATETIME2(0) DEFAULT GETDATE(),
+        created_at BIGINT DEFAULT DATEDIFF_BIG(MILLISECOND,'1970-01-01 00:00:00.000', SYSUTCDATETIME()),
         PRIMARY KEY (ID),
         UNIQUE (ORG_ID),
         CONSTRAINT FK_TierSubscription FOREIGN KEY (tier_id) REFERENCES tier(id)
@@ -62,7 +62,7 @@ BEGIN
         id VARCHAR(128) NOT NULL,
         name VARCHAR(256) NOT NULL,
         description VARCHAR(256),
-        created_at DATETIME2(0) DEFAULT GETDATE(),
+        created_at BIGINT DEFAULT DATEDIFF_BIG(MILLISECOND,'1970-01-01 00:00:00.000', SYSUTCDATETIME()),
         PRIMARY KEY (ID),
         UNIQUE (NAME)
     );

@@ -19,8 +19,8 @@ Tier mockTier = {
     id: "0ccca02-643a43ae-a38-200f2b",
     name: "Free Tier",
     description: "Free allocation to tryout choreo",
-    cost: 0.0,
-    created_at: "2021-07-13 12:58:15",
+    cost: 0,
+    created_at: 1627639797657,
     quota_limits: mockTierQuotas
 };
 
@@ -28,16 +28,16 @@ SubscriptionDAO mockSubscriptionDAO = {
     id: "01ebe42f-9f13-1c18-9e38-cd24f0ebd234",
     org_id: "496b70d7-2ab6-440-405-dde8f64",
     tier_id: "7a13129e-b663-4724-ae7e-5c2e1c364d1c",
-    billing_date: "2021-07-13 12:58:15.0",
+    billing_date: 1627639797657,
     status: "ACTIVE",
-    created_at: "2021-07-13 22:32:42.0"
+    created_at: 1627639797657
 };
 
 AttributeDAO mockAttributeDAO = {
     id: "496b70d7-2ab6-440-405-dde8f64",
     name: "organization_quota",
     description: "Limit for the number of organization can be created by a user",
-    created_at: "2021-07-13 12:58:15"
+    created_at: 1627639797657
 };
 
 @test:Mock {
@@ -147,8 +147,8 @@ class TierQuotaJoinStreamImplementor {
         id: "0ccca02-643a43ae-a38-200f2b",
         name: "Free Tier",
         description: "Free allocation to tryout choreo",
-        cost: 0.0,
-        created_at: "2021-07-13 12:58:15",
+        cost: 0,
+        created_at: 1627639797657,
         attribute_name: "service_quota",
         threshold: 10
     }, 
@@ -156,8 +156,8 @@ class TierQuotaJoinStreamImplementor {
         id: "0ccca02-643a43ae-a38-200f2b",
         name: "Free Tier",
         description: "Free allocation to tryout choreo",
-        cost: 0.0,
-        created_at: "2021-07-13 12:58:15",
+        cost: 0,
+        created_at: 1627639797657,
         attribute_name: "integration_quota",
         threshold: 15
     }, 
@@ -165,8 +165,8 @@ class TierQuotaJoinStreamImplementor {
         id: "0ccca02-643a43ae-a38-200f2b",
         name: "Free Tier",
         description: "Free allocation to tryout choreo",
-        cost: 0.0,
-        created_at: "2021-07-13 12:58:15",
+        cost: 0,
+        created_at: 1627639797657,
         attribute_name: "api_quota",
         threshold: 20
     }, 
@@ -174,8 +174,8 @@ class TierQuotaJoinStreamImplementor {
         id: "0ccca02-643a43ae-a38-200f2b",
         name: "Free Tier",
         description: "Free allocation to tryout choreo",
-        cost: 0.0,
-        created_at: "2021-07-13 12:58:15",
+        cost: 0,
+        created_at: 1627639797657,
         attribute_name: "remote_app_quota",
         threshold: 10
     }];
@@ -198,9 +198,9 @@ class SubscriptionDAOStreamImplementor {
         id: "01ebe42f-9f13-1c18-9e38-cd24f0ebd234",
         org_id: "496b70d7-2ab6-440-405-dde8f64",
         tier_id: "7a13129e-b663-4724-ae7e-5c2e1c364d1c",
-        billing_date: "2021-07-13 12:58:15.0",
+        billing_date: 1627639797657,
         status: "ACTIVE",
-        created_at: "2021-07-13 22:32:42.0"
+        created_at: 1627639797657
     }];
 
     isolated function init() {
@@ -221,7 +221,7 @@ class AttributeDAOStreamImplementor {
         id: "496b70d7-2ab6-440-405-dde8f64",
         name: "organization_quota",
         description: "Limit for the number of organization can be created by a user",
-        created_at: "2021-07-13 12:58:15"
+        created_at: 1627639797657
     }];
 
     isolated function init() {
