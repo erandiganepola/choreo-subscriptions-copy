@@ -40,6 +40,7 @@ public type CreateSubscriptionResponse record {|
 public type Subscription record {|
     string id = "";
     string org_id = "";
+    string org_handle = "";
     string tier_id = "";
     int billing_date = 0;
     string status = "";
@@ -47,7 +48,7 @@ public type Subscription record {|
 |};
 
 public type GetTierDetailRequest record {|
-    string org_id = "";
+    string org_identifier = "";
 |};
 
 public type GetTierDetailResponse record {|

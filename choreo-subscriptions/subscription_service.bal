@@ -13,8 +13,11 @@ listener grpc:Listener ep = new (9090);
 @grpc:ServiceDescriptor {descriptor: api:ROOT_DESCRIPTOR, descMap: api:getDescriptorMap()}
 service "SubscriptionService" on ep {
 
-    remote function GetTierDetails(api:GetTierDetailRequest value) returns api:GetTierDetailResponse|error {
-        return api:getSubscriptionForOrg(value.org_id);
+    remote function GetTierDetailsForOrgId(api:GetTierDetailRequest value) returns api:GetTierDetailResponse|error {
+        return api:getSubscriptionForOrgId(value.org_identifier);
+    }
+    remote function GetTierDetailsForOrgHandle(api:GetTierDetailRequest value) returns api:GetTierDetailResponse|error {
+        return api:getSubscriptionForOrgHandle(value.org_identifier);
     }
     remote function CreateTier(api:CreateTierRequest value) returns api:CreateTierResponse|error {
         return api:createTier(value);

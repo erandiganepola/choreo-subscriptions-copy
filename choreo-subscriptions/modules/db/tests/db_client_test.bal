@@ -27,6 +27,7 @@ Tier mockTier = {
 SubscriptionDAO mockSubscriptionDAO = {
     id: "01ebe42f-9f13-1c18-9e38-cd24f0ebd234",
     org_id: "496b70d7-2ab6-440-405-dde8f64",
+    org_handle: "jhondoe",
     tier_id: "7a13129e-b663-4724-ae7e-5c2e1c364d1c",
     billing_date: 1627639797657,
     status: "ACTIVE",
@@ -50,10 +51,21 @@ function getMockClient() returns jdbc:Client|error {
 @test:Config {
     groups: ["db"]
 }
-function testGetSubscriptionForOrg() {
+function testGetSubscriptionForOrgId() {
     dbClient = test:mock(jdbc:Client);
     test:prepare(dbClient).when("query").thenReturn(returnMockedSubscriptionDAOStream());
-    SubscriptionDAO|error result = getSubscriptionForOrg("0000");
+    SubscriptionDAO|error result = getSubscriptionForOrgId("0000");
+
+    test:assertEquals(result, mockSubscriptionDAO);
+}
+
+@test:Config {
+    groups: ["db"]
+}
+function testGetSubscriptionForOrgHandle() {
+    dbClient = test:mock(jdbc:Client);
+    test:prepare(dbClient).when("query").thenReturn(returnMockedSubscriptionDAOStream());
+    SubscriptionDAO|error result = getSubscriptionForOrgHandle("jhondoe");
 
     test:assertEquals(result, mockSubscriptionDAO);
 }
@@ -197,6 +209,7 @@ class SubscriptionDAOStreamImplementor {
     private SubscriptionDAO[] currentEntries = [{
         id: "01ebe42f-9f13-1c18-9e38-cd24f0ebd234",
         org_id: "496b70d7-2ab6-440-405-dde8f64",
+        org_handle: "jhondoe",
         tier_id: "7a13129e-b663-4724-ae7e-5c2e1c364d1c",
         billing_date: 1627639797657,
         status: "ACTIVE",

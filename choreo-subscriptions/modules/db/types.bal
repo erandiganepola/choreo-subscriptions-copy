@@ -52,6 +52,7 @@ public type TierQuotaJoin record {|
 public type SubscriptionDAO record {|
     string id?;
     string org_id;
+    string org_handle;
     string tier_id;
     int billing_date;
     string status;

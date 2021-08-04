@@ -34,13 +34,13 @@ function getClient() returns jdbc:Client|error {
     );
 }
 
-# Retrieve the subscription for the given organization from the DB
+# Retrieve the subscription for the given organization uuid from the DB
 #
 # + orgId - The id of the interested organization
 # + return - The subscription object
-public function getSubscriptionForOrg(string orgId) returns SubscriptionDAO|error {
-    log:printDebug("Getting subscription for the organization from the database", orgId = orgId);
-    sql:ParameterizedQuery subscriptionQuery = `SELECT id, org_id, tier_id, billing_date, status, created_at
+public function getSubscriptionForOrgId(string orgId) returns SubscriptionDAO|error {
+    log:printDebug("Getting subscription for the organization uuid from the database", orgId = orgId);
+    sql:ParameterizedQuery subscriptionQuery = `SELECT id, org_id, org_handle, tier_id, billing_date, status, created_at
         FROM subscription WHERE org_id=${orgId}`;
     stream<record {}, error> subscriptionResult = dbClient->query(subscriptionQuery, SubscriptionDAO);
     stream<SubscriptionDAO, sql:Error> subscriptionStream = <stream<SubscriptionDAO, sql:Error>>subscriptionResult;
@@ -52,10 +52,37 @@ public function getSubscriptionForOrg(string orgId) returns SubscriptionDAO|erro
     }
 
     if (subscriptionRecord is record {|SubscriptionDAO value;|}) {
-        log:printDebug("Successfully retrieved subscription from the database", orgId = orgId);
+        log:printDebug("Successfully retrieved subscription for organization uuid from the database", orgId = orgId);
         return subscriptionRecord.value;
     } else {
-        log:printError("Error retrieving subscription from the database.", 'error = subscriptionRecord);
+        log:printError("Error retrieving subscription for organization uuid from the database.",
+            'error = subscriptionRecord);
+        return error("Error retrieving subscription from the database.");
+    }
+}
+
+# Retrieve the subscription for the given organization handle from the DB
+#
+# + orgHandle - The org handle of the interested organization
+# + return - The subscription object
+public function getSubscriptionForOrgHandle(string orgHandle) returns SubscriptionDAO|error {
+    log:printDebug("Getting subscription for the organization handle from the database", orgHandle = orgHandle);
+    sql:ParameterizedQuery subscriptionQuery = `SELECT id, org_id, org_handle, tier_id, billing_date, status, created_at
+        FROM subscription WHERE org_handle=${orgHandle}`;
+    stream<record {}, error> subscriptionResult = dbClient->query(subscriptionQuery, SubscriptionDAO);
+    stream<SubscriptionDAO, sql:Error> subscriptionStream = <stream<SubscriptionDAO, sql:Error>>subscriptionResult;
+    record {|SubscriptionDAO value;|}|error? subscriptionRecord = subscriptionStream.next();
+
+    error? closeError = subscriptionResult.close();
+    if (closeError is error) {
+        log:printWarn("Error while closing database connection", 'error = closeError);
+    }
+
+    if (subscriptionRecord is record {|SubscriptionDAO value;|}) {
+        log:printDebug("Successfully retrieved subscription for org handle from the database", orgHandle = orgHandle);
+        return subscriptionRecord.value;
+    } else {
+        log:printError("Error retrieving subscription for org handle from the database.", 'error = subscriptionRecord);
         return error("Error retrieving subscription from the database.");
     }
 }
@@ -66,7 +93,7 @@ public function getSubscriptionForOrg(string orgId) returns SubscriptionDAO|erro
 # + return - The subscription object
 public function getSubscription(string subscriptionId) returns SubscriptionDAO|error {
     log:printDebug("Getting subscription from the database", subscriptionId = subscriptionId);
-    sql:ParameterizedQuery subscriptionQuery = `SELECT id, org_id, tier_id, billing_date, status, created_at 
+    sql:ParameterizedQuery subscriptionQuery = `SELECT id, org_id, org_handle, tier_id, billing_date, status, created_at 
         FROM subscription WHERE id = ${subscriptionId}`;
     stream<record {}, error> subscriptionResult = dbClient->query(subscriptionQuery, SubscriptionDAO);
     stream<SubscriptionDAO, sql:Error> subscriptionStream = <stream<SubscriptionDAO, sql:Error>>subscriptionResult;
@@ -210,18 +237,18 @@ public function addTier(TierDAO tier) returns error? {
 # + return - Error if happened during the database insertion
 public function addSubscription(SubscriptionDAO subscription) returns error? {
     log:printDebug("Adding subscription to the database", subscription = subscription);
-    sql:ParameterizedQuery addSubscriptionQuery = `INSERT INTO subscription(id, org_id, tier_id, billing_date, status)
-        values(${subscription?.id}, ${subscription.org_id}, ${subscription.tier_id}, ${subscription.billing_date},
-        ${subscription.status})`;
+    sql:ParameterizedQuery addSubscriptionQuery = `INSERT INTO subscription(id, org_id, org_handle, tier_id,
+        billing_date, status) values(${subscription?.id}, ${subscription.org_id}, ${subscription.org_handle},
+        ${subscription.tier_id}, ${subscription.billing_date}, ${subscription.status})`;
     sql:ExecutionResult|sql:Error result = dbClient->execute(addSubscriptionQuery);
 
     if (result is sql:Error) {
-        log:printError("Error while creating subscription.", org_id = subscription.org_id, 
-            tier_id = subscription.tier_id, 'error = result);
+        log:printError("Error while creating subscription.", org_id = subscription.org_id,
+            org_handle = subscription.org_handle, tier_id = subscription.tier_id, 'error = result);
         return result;
     } else {
         log:printDebug("Successfully created the subscription in database.", org_id = subscription.org_id, 
-            tier_id = subscription.tier_id);
+            org_handle = subscription.org_handle, tier_id = subscription.tier_id);
     }
 }
 

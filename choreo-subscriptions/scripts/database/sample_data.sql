@@ -21,6 +21,6 @@ INSERT INTO choreo_subscriptions_db.dbo.quota (tier_id,attribute_name,threshold)
 	 (N'01ebea43-be76-1d7a-b410-2d1b873c57af',N'remote_app_quota',100);
 GO
 
-INSERT INTO choreo_subscriptions_db.dbo.subscription (id,org_id,tier_id,billing_date,status) VALUES
-	 (N'0000060f-569d-4394-b689-4624b9a31b5b',N'0000',N'01ebea3a-7735-10be-b3c0-ba95f991e877',1627639797657,N'ACTIVE'),
-	 (N'00151c87-07c0-48b5-ad68-103b1f6f1a90',N'1111',N'01ebea43-be76-1d7a-b410-2d1b873c57af',1627639797657,N'ACTIVE');
+INSERT INTO choreo_subscriptions_db.dbo.subscription (id,org_id,org_handle,tier_id,billing_date,status) VALUES
+	 (N'0000060f-569d-4394-b689-4624b9a31b5b',N'0000',N'jhondoe',N'01ebea3a-7735-10be-b3c0-ba95f991e877',1627639797657,N'ACTIVE'),
+	 (N'00151c87-07c0-48b5-ad68-103b1f6f1a90',N'1111',N'jackbob',N'01ebea43-be76-1d7a-b410-2d1b873c57af',1627639797657,N'ACTIVE');
