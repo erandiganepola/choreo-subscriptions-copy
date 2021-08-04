@@ -55,7 +55,7 @@ public function getSubscriptionForOrgId(string orgId) returns SubscriptionDAO|er
         log:printDebug("Successfully retrieved subscription for organization uuid from the database", orgId = orgId);
         return subscriptionRecord.value;
     } else {
-        log:printError("Error retrieving subscription for organization uuid from the database.",
+        log:printError("Error retrieving subscription for organization uuid from the database.", 
             'error = subscriptionRecord);
         return error("Error retrieving subscription from the database.");
     }
@@ -243,7 +243,7 @@ public function addSubscription(SubscriptionDAO subscription) returns error? {
     sql:ExecutionResult|sql:Error result = dbClient->execute(addSubscriptionQuery);
 
     if (result is sql:Error) {
-        log:printError("Error while creating subscription.", org_id = subscription.org_id,
+        log:printError("Error while creating subscription.", org_id = subscription.org_id, 
             org_handle = subscription.org_handle, tier_id = subscription.tier_id, 'error = result);
         return result;
     } else {
