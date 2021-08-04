@@ -14,8 +14,8 @@ public type Tier record {|
     string id = "";
     string name = "";
     string description = "";
-    string cost = "";
-    string created_at = "";
+    int cost = 0;
+    int created_at = 0;
     int service_quota = 0;
     int integration_quota = 0;
     int api_quota = 0;
@@ -26,7 +26,7 @@ public type Attribute record {|
     string id = "";
     string name = "";
     string description = "";
-    string created_at = "";
+    int created_at = 0;
 |};
 
 public type CreateSubscriptionRequest record {|
@@ -40,14 +40,15 @@ public type CreateSubscriptionResponse record {|
 public type Subscription record {|
     string id = "";
     string org_id = "";
+    string org_handle = "";
     string tier_id = "";
-    string billing_date = "";
+    int billing_date = 0;
     string status = "";
-    string created_at = "";
+    int created_at = 0;
 |};
 
 public type GetTierDetailRequest record {|
-    string org_id = "";
+    string org_identifier = "";
 |};
 
 public type GetTierDetailResponse record {|

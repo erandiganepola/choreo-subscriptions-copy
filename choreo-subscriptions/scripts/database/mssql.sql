@@ -5,12 +5,12 @@
 -- herein in any form is strictly forbidden, unless permitted by WSO2 expressly.
 -- You may not alter or remove any copyright or other notice from copies of this content.
 
-IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = 'choreo-subscriptions-db')
+IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = 'choreo_subscriptions_db')
     BEGIN
-        CREATE DATABASE choreo-subscriptions-db;
+        CREATE DATABASE choreo_subscriptions_db;
     END
 GO
-USE choreo-subscriptions-db;
+USE choreo_subscriptions_db;
 GO
 
 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='tier' and xtype='U')
@@ -19,8 +19,8 @@ BEGIN
         id VARCHAR(128) NOT NULL,
         name VARCHAR(256) NOT NULL,
         description VARCHAR(1024) NOT NULL,
-        cost VARCHAR(256) NOT NULL,
-        created_at DATETIME2(0) DEFAULT GETDATE(),
+        cost INTEGER NOT NULL,
+        created_at BIGINT DEFAULT DATEDIFF_BIG(MILLISECOND,'1970-01-01 00:00:00.000', SYSUTCDATETIME()),
         PRIMARY KEY (ID)
     );
 END
@@ -31,12 +31,14 @@ BEGIN
     CREATE TABLE subscription (
         id VARCHAR(128) NOT NULL,
         org_id VARCHAR(128) NOT NULL,
+        org_handle VARCHAR(255) NOT NULL,
         tier_id VARCHAR(128) NOT NULL,
-        billing_date DATETIME2(0) NOT NULL,
+        billing_date BIGINT DEFAULT DATEDIFF_BIG(MILLISECOND,'1970-01-01 00:00:00.000', SYSUTCDATETIME()),
         status VARCHAR(128) NOT NULL,
-        created_at DATETIME2(0) DEFAULT GETDATE(),
-        PRIMARY KEY (ID),
-        UNIQUE (ORG_ID),
+        created_at BIGINT DEFAULT DATEDIFF_BIG(MILLISECOND,'1970-01-01 00:00:00.000', SYSUTCDATETIME()),
+        PRIMARY KEY (org_id, tier_id),
+        UNIQUE (org_id),
+        UNIQUE (org_handle),
         CONSTRAINT FK_TierSubscription FOREIGN KEY (tier_id) REFERENCES tier(id)
     );
 END
@@ -44,7 +46,7 @@ GO
 
 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='quota' and xtype='U')
 BEGIN
-    CREATE TABLE quota (    
+    CREATE TABLE quota (
         id INTEGER IDENTITY(1,1),
         tier_id VARCHAR(128) NOT NULL,
         attribute_name VARCHAR(256) NOT NULL,
@@ -62,7 +64,7 @@ BEGIN
         id VARCHAR(128) NOT NULL,
         name VARCHAR(256) NOT NULL,
         description VARCHAR(256),
-        created_at DATETIME2(0) DEFAULT GETDATE(),
+        created_at BIGINT DEFAULT DATEDIFF_BIG(MILLISECOND,'1970-01-01 00:00:00.000', SYSUTCDATETIME()),
         PRIMARY KEY (ID),
         UNIQUE (NAME)
     );
