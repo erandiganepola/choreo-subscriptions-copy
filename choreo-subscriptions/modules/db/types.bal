@@ -20,6 +20,7 @@ public type TierQuotas record {|
     int integration_quota = 10;
     int api_quota = 30;
     int remote_app_quota = 10;
+    int step_quota = 0;
 |};
 
 public type TierDAO record {|
@@ -47,6 +48,23 @@ public type TierQuotaJoin record {|
     int created_at;
     string attribute_name;
     int threshold;
+|};
+
+public type SubscriptionTierJoin record {|
+    string org_id;
+    string org_handle;
+    string tier_id;
+    string tier_name;
+    string attribute_name;
+    int threshold;
+|};
+
+public type SubscriptionTierMapping record {|
+    string org_id = "";
+    string org_handle = "";
+    string tier_id = "";
+    string tier_name = "";
+    int step_quota = 0;
 |};
 
 public type SubscriptionDAO record {|

@@ -1,5 +1,6 @@
-public type CreateTierResponse record {|
-    Tier tier = {};
+public type SubscriptionTierMappingsRequest record {|
+    int offset = 0;
+    int 'limit = 0;
 |};
 
 public type CreateTierRequest record {|
@@ -8,6 +9,11 @@ public type CreateTierRequest record {|
 
 public type CreateAttributeRequest record {|
     Attribute attribute = {};
+|};
+
+public type SubscriptionTierMappingsResponse record {|
+    SubscriptionTierMappings subscription_tier_mappings = {};
+    Pagination pagination = {};
 |};
 
 public type Tier record {|
@@ -20,6 +26,7 @@ public type Tier record {|
     int integration_quota = 0;
     int api_quota = 0;
     int remote_app_quota = 0;
+    int step_quota = 0;
 |};
 
 public type Attribute record {|
@@ -29,8 +36,30 @@ public type Attribute record {|
     int created_at = 0;
 |};
 
+public type SubscriptionTierMapping record {|
+    string org_id = "";
+    string org_handle = "";
+    string tier_id = "";
+    string tier_name = "";
+    int step_quota = 0;
+|};
+
 public type CreateSubscriptionRequest record {|
     Subscription subscription = {};
+|};
+
+public type GetTierDetailRequest record {|
+    string org_identifier = "";
+|};
+
+public type CreateTierResponse record {|
+    Tier tier = {};
+|};
+
+public type Pagination record {|
+    int offset = 0;
+    int 'limit = 0;
+    int total = 0;
 |};
 
 public type CreateSubscriptionResponse record {|
@@ -47,14 +76,22 @@ public type Subscription record {|
     int created_at = 0;
 |};
 
-public type GetTierDetailRequest record {|
-    string org_identifier = "";
-|};
-
 public type GetTierDetailResponse record {|
     Tier tier = {};
 |};
 
 public type CreateAttributeResponse record {|
     Attribute attribute = {};
+|};
+
+public type SubscriptionTierMappingResponse record {|
+    SubscriptionTierMapping subscription_tier_mapping = {};
+|};
+
+public type SubscriptionTierMappings record {|
+    SubscriptionTierMapping[] subscription_tier_mappings = [];
+|};
+
+public type SubscriptionTierMappingRequest record {|
+    string org_identifier = "";
 |};
