@@ -49,7 +49,7 @@ SubscriptionTierMapping[] mockSubscriptionTierMappings = [{
     org_handle: "jhondoe",
     tier_name: "Free Tier",
     step_quota: 1000
-},
+}, 
 {
     org_id: "lk78ot-643a43ae-a38-2oof2b",
     tier_id: "9nffg02-600ki98ae-a38g-kbnjb",
@@ -192,7 +192,7 @@ class TierQuotasStreamImplementor {
         {attribute_name: "service_quota", threshold: 10}, 
         {attribute_name: "integration_quota", threshold: 15}, 
         {attribute_name: "api_quota", threshold: 20}, 
-        {attribute_name: "remote_app_quota", threshold: 10},
+        {attribute_name: "remote_app_quota", threshold: 10}, 
         {attribute_name: "step_quota", threshold: 1000}
     ];
 
@@ -300,7 +300,7 @@ class SubscriptionTierJoinsStreamImplementor {
         tier_name: "Free Tier",
         attribute_name: "step_quota",
         threshold: 1000
-    },
+    }, 
     {
         org_id: "lk78ot-643a43ae-a38-2oof2b",
         tier_id: "9nffg02-600ki98ae-a38g-kbnjb",

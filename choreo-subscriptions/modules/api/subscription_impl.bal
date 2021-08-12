@@ -37,7 +37,7 @@ public function getSubscriptionForOrgHandle(string orgHandle) returns GetTierDet
 }
 
 # Returns the subscription tier mapping object for the given organization uuid
-# 
+#
 # + orgId - UUID of the interested organization
 # + return - Subscription tier mapping object
 public function getSubscriptionTierMappingForOrgId(string orgId) returns SubscriptionTierMappingResponse|error {
@@ -59,7 +59,7 @@ public function getSubscriptionTierMappingForOrgId(string orgId) returns Subscri
 }
 
 # Returns a list of subscription tier mappings with pagination
-# 
+#
 # + offset - The offset value where the pagination start from
 # + limit - Number of objects need to be returned
 # + return - List of subscription tier object, pagination params
@@ -70,7 +70,7 @@ public function getSubscriptionTierMappings(int offset, int 'limit) returns Subs
         if (subscriptionTierMappings is db:SubscriptionTierMapping[]) {
             int length = subscriptionTierMappings.length();
             SubscriptionTierMapping[] paginatedSubscriptions = [];
-            foreach var i in 0..<length {
+            foreach var i in 0 ..< length {
                 db:SubscriptionTierMapping subTierMapping = subscriptionTierMappings[i];
                 SubscriptionTierMapping subTierMappingDTO = {
                     org_id: subTierMapping.org_id,

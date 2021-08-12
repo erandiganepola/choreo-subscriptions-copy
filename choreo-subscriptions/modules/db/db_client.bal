@@ -113,18 +113,18 @@ public function getSubscriptionTierMappingForOrgId(string orgId) returns Subscri
             org_handle: mappingRecord.value.org_handle,
             tier_id: mappingRecord.value.tier_id,
             tier_name: mappingRecord.value.tier_name,
-            step_quota: mappingRecord.value.threshold 
+            step_quota: mappingRecord.value.threshold
         };
         return subscriptionTierMapping;
     } else {
-        log:printError("Error retrieving subscription tier mapping for org uuid from the database.",
+        log:printError("Error retrieving subscription tier mapping for org uuid from the database.", 
             'error = mappingRecord);
         return error("Error retrieving subscription from the database.");
     }
 }
 
 # Retrieve a list of subscription tier mappings with given offset and limit values
-# 
+#
 # + offset - The offset value from where the records to be retrieved
 # + limit - The number of records required
 # + return - Array of subscription tier mapping objects
@@ -169,7 +169,7 @@ public function getSubscriptionTierMappings(int offset, int 'limit) returns Subs
 }
 
 # Retrieves the number of subscriptions available in the DB
-# 
+#
 # + return - Number of subscriptions available in the DB
 public function getSubscriptionsCount() returns int|error {
     log:printDebug("Getting the count of subscriptions from the database");
