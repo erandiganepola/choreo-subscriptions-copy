@@ -28,6 +28,7 @@ redis:Client cacheClient = check new ({
 # + cacheKey - Key value to search in the redis cache
 # + return - Associated value with the key
 public function getEntry(string cacheKey) returns (string|error)? {
+    log:printDebug("Trying to get the cached value in redis for the key", key = getPrefixedKey(cacheKey));
     string key = getPrefixedKey(cacheKey);
     var value = cacheClient->get(key);
     if (value is ()) {
@@ -36,7 +37,7 @@ public function getEntry(string cacheKey) returns (string|error)? {
     } else if (value is string) {
         log:printDebug("Cache hits for key", key = key, value = value);
         return value;
-    } else if (value is error) {
+    } else {
         log:printError("Error occured looking for cache.", key = key, 'error = value);
         return value;
     }
@@ -48,10 +49,12 @@ public function getEntry(string cacheKey) returns (string|error)? {
 # + value - The value need to be cached
 # + return - Caching request result or error
 public function setEntry(string cacheKey, string value) returns string|error {
+    log:printDebug("Trying to add a key, value pair in redis", key = getPrefixedKey(cacheKey), value = value);
     string key = getPrefixedKey(cacheKey);
     var stringSetresult = cacheClient->set(key, value);
     if (stringSetresult is string) {
-        log:printDebug("Reply from the redis server.", response = stringSetresult);
+        log:printDebug("Successfully added entry to the cache. Reply from the redis server.", 
+            response = stringSetresult);
     } else {
         log:printError("Error occurred while storing the pair in redis.", key = key, value = value, 'error = stringSetresult);
     }
