@@ -1,6 +1,11 @@
 [[dependency]]
 org = "ballerinax"
 name = "redis"
-version = "0.99.7"
+version = "1.0.1"
+
+[[dependency]]
+org = "ballerinax"
+name = "java.jdbc"
+version = "0.6.0-beta.1.1"
 
 

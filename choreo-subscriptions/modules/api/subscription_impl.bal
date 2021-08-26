@@ -15,6 +15,7 @@ import choreo_subscriptions.cache;
 # + orgId - uuid of the interested organization
 # + return - Subscribed tier object
 public function getSubscriptionForOrgId(string orgId) returns GetTierDetailResponse|error {
+    log:printDebug("Getting subscribed tier details for the organization", orgUuid = orgId);
     GetTierDetailResponse|error getTierDetailResponse = getTierForOrgFromCache(orgId);
     if (getTierDetailResponse is GetTierDetailResponse) {
         return getTierDetailResponse;
@@ -28,6 +29,7 @@ public function getSubscriptionForOrgId(string orgId) returns GetTierDetailRespo
 # + orgHandle - Handle of the interested organization
 # + return - Subscribed tier object
 public function getSubscriptionForOrgHandle(string orgHandle) returns GetTierDetailResponse|error {
+    log:printDebug("Getting subscribed tier details for the organization", orgHandle = orgHandle);
     GetTierDetailResponse|error getTierDetailResponse = getTierForOrgFromCache(orgHandle);
     if (getTierDetailResponse is GetTierDetailResponse) {
         return getTierDetailResponse;
@@ -108,6 +110,7 @@ public function getSubscriptionTierMappings(int offset, int 'limit) returns Subs
 # + createTierRequest - The tier object needs to be created
 # + return - Created tier object
 public function createTier(CreateTierRequest createTierRequest) returns CreateTierResponse|error {
+    log:printDebug("Creating a tier with the given metadata", tier = createTierRequest.tier);
     string uuid = uuid:createType1AsString();
     db:TierDAO tierDAOIn = {
         id: uuid,
@@ -202,6 +205,8 @@ public function createTier(CreateTierRequest createTierRequest) returns CreateTi
 # + return - created subscription object
 public function createSubscription(CreateSubscriptionRequest createSubscriptionRequest) returns 
         CreateSubscriptionResponse|error {
+    log:printDebug("Creating a subscription with the given values", orgId = createSubscriptionRequest.subscription.org_id, 
+        tierId = createSubscriptionRequest.subscription.tier_id);
     string uuid = uuid:createType1AsString();
     db:SubscriptionDAO subscriptionDAOin = {
         id: uuid,
@@ -241,6 +246,7 @@ public function createSubscription(CreateSubscriptionRequest createSubscriptionR
 # + createAttributeRequest - The attribute object needs to be created
 # + return - The created attribute object
 public function createAttribute(CreateAttributeRequest createAttributeRequest) returns CreateAttributeResponse|error {
+    log:printDebug("Creating a tier attribute with the given metadata", attribute = createAttributeRequest.attribute);
     string uuid = uuid:createType1AsString();
     db:AttributeDAO attibuteDAOIn = {
         id: uuid,
