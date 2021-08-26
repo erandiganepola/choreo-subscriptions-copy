@@ -41,6 +41,7 @@ public type SubscriptionTierMapping record {|
     string org_handle = "";
     string tier_id = "";
     string tier_name = "";
+    int billing_date = 0;
     int step_quota = 0;
 |};
 

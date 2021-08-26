@@ -49,6 +49,7 @@ public function getSubscriptionTierMappingForOrgId(string orgId) returns Subscri
                 org_handle: subscriptionTierMapping.org_handle,
                 tier_id: subscriptionTierMapping.tier_id,
                 tier_name: subscriptionTierMapping.tier_name,
+                billing_date: subscriptionTierMapping.billing_date,
                 step_quota: subscriptionTierMapping.step_quota
             }
         };
@@ -77,6 +78,7 @@ public function getSubscriptionTierMappings(int offset, int 'limit) returns Subs
                     org_handle: subTierMapping.org_handle,
                     tier_id: subTierMapping.tier_id,
                     tier_name: subTierMapping.tier_name,
+                    billing_date: subTierMapping.billing_date,
                     step_quota: subTierMapping.step_quota
                 };
                 paginatedSubscriptions[i] = subTierMappingDTO;

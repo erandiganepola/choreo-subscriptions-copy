@@ -93,10 +93,10 @@ public function getSubscriptionForOrgHandle(string orgHandle) returns Subscripti
 # + return - The subscription tier mapping object 
 public function getSubscriptionTierMappingForOrgId(string orgId) returns SubscriptionTierMapping|error {
     log:printDebug("Getting subscription tier mapping from the database", orgId = orgId);
-    sql:ParameterizedQuery mappingQuery = `SELECT subscription.org_id, subscription.org_handle, tier.id AS tier_id,
-        tier.name AS tier_name, quota.attribute_name, quota.threshold FROM ((tier INNER JOIN quota ON
-        tier.id = quota.tier_id) INNER JOIN subscription ON tier.id = subscription.tier_id) WHERE
-        subscription.org_id = ${orgId} AND quota.attribute_name = 'step_quota'`;
+    sql:ParameterizedQuery mappingQuery = `SELECT subscription.org_id, subscription.org_handle,
+        subscription.billing_date, tier.id AS tier_id, tier.name AS tier_name, quota.attribute_name, quota.threshold
+        FROM ((tier INNER JOIN quota ON tier.id = quota.tier_id) INNER JOIN subscription ON
+        tier.id = subscription.tier_id) WHERE subscription.org_id = ${orgId} AND quota.attribute_name = 'step_quota'`;
     stream<record {}, error> mappingResult = dbClient->query(mappingQuery, SubscriptionTierJoin);
     stream<SubscriptionTierJoin, sql:Error> mappingStream = <stream<SubscriptionTierJoin, sql:Error>>mappingResult;
     record {|SubscriptionTierJoin value;|}|error? mappingRecord = mappingStream.next();
@@ -113,6 +113,7 @@ public function getSubscriptionTierMappingForOrgId(string orgId) returns Subscri
             org_handle: mappingRecord.value.org_handle,
             tier_id: mappingRecord.value.tier_id,
             tier_name: mappingRecord.value.tier_name,
+            billing_date: mappingRecord.value.billing_date,
             step_quota: mappingRecord.value.threshold
         };
         return subscriptionTierMapping;
@@ -130,9 +131,9 @@ public function getSubscriptionTierMappingForOrgId(string orgId) returns Subscri
 # + return - Array of subscription tier mapping objects
 public function getSubscriptionTierMappings(int offset, int 'limit) returns SubscriptionTierMapping[]|error {
     log:printDebug("Getting subscription tier mappings from the database", offset = offset, 'limit = 'limit);
-    sql:ParameterizedQuery mappingsQuery = `SELECT subscription.org_id, subscription.org_handle, tier.id AS tier_id,
-        tier.name AS tier_name, quota.attribute_name, quota.threshold FROM ((tier INNER JOIN quota ON
-        tier.id = quota.tier_id) INNER JOIN subscription ON tier.id = subscription.tier_id) WHERE
+    sql:ParameterizedQuery mappingsQuery = `SELECT subscription.org_id, subscription.org_handle, subscription
+        .billing_date, tier.id AS tier_id, tier.name AS tier_name, quota.attribute_name, quota.threshold FROM ((tier
+        INNER JOIN quota ON tier.id = quota.tier_id) INNER JOIN subscription ON tier.id = subscription.tier_id) WHERE
         quota.attribute_name = 'step_quota' ORDER BY subscription.org_id OFFSET ${offset} ROWS FETCH
         NEXT ${'limit} ROWS ONLY`;
 
@@ -147,6 +148,7 @@ public function getSubscriptionTierMappings(int offset, int 'limit) returns Subs
             org_handle: subscriptionTierJoin.org_handle,
             tier_id: subscriptionTierJoin.tier_id,
             tier_name: subscriptionTierJoin.tier_name,
+            billing_date: subscriptionTierJoin.billing_date,
             step_quota: subscriptionTierJoin.threshold
         };
         subscriptionTierMappings[count] = subscriptionTierMapping;

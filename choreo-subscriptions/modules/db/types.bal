@@ -55,6 +55,7 @@ public type SubscriptionTierJoin record {|
     string org_handle;
     string tier_id;
     string tier_name;
+    int billing_date;
     string attribute_name;
     int threshold;
 |};
@@ -64,6 +65,7 @@ public type SubscriptionTierMapping record {|
     string org_handle = "";
     string tier_id = "";
     string tier_name = "";
+    int billing_date;
     int step_quota = 0;
 |};
 

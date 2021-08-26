@@ -40,6 +40,7 @@ SubscriptionTierMapping mockSubscriptionTierMapping = {
     tier_id: "9nffg02-612k12ae-a38-kiod2b",
     org_handle: "jhondoe",
     tier_name: "Free Tier",
+    billing_date: 1627639797657,
     step_quota: 1000
 };
 
@@ -48,6 +49,7 @@ SubscriptionTierMapping[] mockSubscriptionTierMappings = [{
     tier_id: "9nffg02-612k12ae-a38-kiod2b",
     org_handle: "jhondoe",
     tier_name: "Free Tier",
+    billing_date: 1627639797667,
     step_quota: 1000
 }, 
 {
@@ -55,6 +57,7 @@ SubscriptionTierMapping[] mockSubscriptionTierMappings = [{
     tier_id: "9nffg02-600ki98ae-a38g-kbnjb",
     org_handle: "bessjob",
     tier_name: "Enterprise Tier",
+    billing_date: 1627639797677,
     step_quota: 1000000
 }];
 
@@ -275,6 +278,7 @@ class SubscriptionTierJoinStreamImplementor {
         tier_id: "9nffg02-612k12ae-a38-kiod2b",
         org_handle: "jhondoe",
         tier_name: "Free Tier",
+        billing_date: 1627639797657,
         attribute_name: "step_quota",
         threshold: 1000
     }];
@@ -298,6 +302,7 @@ class SubscriptionTierJoinsStreamImplementor {
         tier_id: "9nffg02-612k12ae-a38-kiod2b",
         org_handle: "jhondoe",
         tier_name: "Free Tier",
+        billing_date: 1627639797667,
         attribute_name: "step_quota",
         threshold: 1000
     }, 
@@ -306,6 +311,7 @@ class SubscriptionTierJoinsStreamImplementor {
         tier_id: "9nffg02-600ki98ae-a38g-kbnjb",
         org_handle: "bessjob",
         tier_name: "Enterprise Tier",
+        billing_date: 1627639797677,
         attribute_name: "step_quota",
         threshold: 1000000
     }];
