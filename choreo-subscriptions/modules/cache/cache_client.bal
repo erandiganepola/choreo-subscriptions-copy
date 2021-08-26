@@ -53,7 +53,7 @@ public function setEntry(string cacheKey, string value) returns string|error {
     string key = getPrefixedKey(cacheKey);
     var stringSetresult = cacheClient->set(key, value);
     if (stringSetresult is string) {
-        log:printDebug("Successfully added entry to the cache. Reply from the redis server.",
+        log:printDebug("Successfully added entry to the cache. Reply from the redis server.", 
             response = stringSetresult);
     } else {
         log:printError("Error occurred while storing the pair in redis.", key = key, value = value, 'error = stringSetresult);
