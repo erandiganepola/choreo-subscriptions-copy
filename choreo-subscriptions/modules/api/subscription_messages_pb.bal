@@ -1,5 +1,5 @@
-public type CreateTierResponse record {|
-    Tier tier = {};
+public type UpdateSubscriptionResponse record {|
+    Subscription subscription = {};
 |};
 
 public type CreateTierRequest record {|
@@ -8,6 +8,10 @@ public type CreateTierRequest record {|
 
 public type CreateAttributeRequest record {|
     Attribute attribute = {};
+|};
+
+public type UpdateSubscriptionRequest record {|
+    Subscription subscription = {};
 |};
 
 public type Tier record {|
@@ -33,6 +37,22 @@ public type CreateSubscriptionRequest record {|
     Subscription subscription = {};
 |};
 
+public type GetTierDetailRequest record {|
+    string org_identifier = "";
+|};
+
+public type DeleteSubscriptionRequest record {|
+    string identifier = "";
+|};
+
+public type CreateTierResponse record {|
+    Tier tier = {};
+|};
+
+public type DeleteSubscriptionResponse record {|
+    string identifier = "";
+|};
+
 public type CreateSubscriptionResponse record {|
     Subscription subscription = {};
 |};
@@ -45,10 +65,6 @@ public type Subscription record {|
     int billing_date = 0;
     string status = "";
     int created_at = 0;
-|};
-
-public type GetTierDetailRequest record {|
-    string org_identifier = "";
 |};
 
 public type GetTierDetailResponse record {|

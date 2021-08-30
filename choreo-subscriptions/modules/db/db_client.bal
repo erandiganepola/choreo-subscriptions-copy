@@ -252,6 +252,82 @@ public function addSubscription(SubscriptionDAO subscription) returns error? {
     }
 }
 
+# Update a subscription available in the database
+#
+# + subscription - The subscription object with the updated properties
+# + return - Error if happened during the database update
+public function updateSubscription(SubscriptionDAO subscription) returns error? {
+    log:printDebug("Updating the subscription in the database", orgId = subscription.org_id, 
+        orgHandle = subscription.org_handle);
+    sql:ParameterizedQuery updateSubscriptionQuery = `UPDATE subscription SET org_id = ${subscription.org_id},
+        org_handle = ${subscription.org_handle}, tier_id = ${subscription.tier_id},
+        billing_date =${subscription.billing_date}, status = ${subscription.status}
+        WHERE id = ${subscription?.id}`;
+    sql:ExecutionResult|sql:Error result = dbClient->execute(updateSubscriptionQuery);
+
+    if (result is sql:Error) {
+        log:printError("Error while updating subscription.", orgId = subscription.org_id, 
+            orgHandle = subscription.org_handle, 'error = result);
+        return error("Error while updating the subscription in the database");
+    } else {
+        log:printDebug("Successfully updated the subscription.", orgId = subscription.org_id, 
+            orgHandle = subscription.org_handle);
+    }
+}
+
+# Delete a subscription based on the subscription id
+#
+# + subscriptionId - The id of the subscription object to be deleted
+# + return - Error if happened during the database deletion
+public function deleteSubscription(string subscriptionId) returns error? {
+    log:printDebug("Deleting the subscription in the database based on id", subscriptionId = subscriptionId);
+    sql:ParameterizedQuery deleteSubscriptionQuery = `DELETE FROM subscription WHERE id = ${subscriptionId}`;
+    sql:ExecutionResult|sql:Error result = dbClient->execute(deleteSubscriptionQuery);
+
+    if (result is sql:Error) {
+        log:printError("Error while deleting the subscription identified by id.", subscriptionId = subscriptionId, 
+            'error = result);
+        return error("Error while deleting the subscription in the database");
+    } else {
+        log:printDebug("Successfully deleted the subscription.", subscriptionId = subscriptionId);
+    }
+}
+
+# Delete a subscription based on the organization id
+#
+# + orgId - The organization uuid of the subscription object to be deleted
+# + return - Error if happened during the database deletion
+public function deleteSubscriptionByOrgId(string orgId) returns error? {
+    log:printDebug("Deleting the subscription in the database based on orgId", orgId = orgId);
+    sql:ParameterizedQuery deleteSubscriptionQuery = `DELETE FROM subscription WHERE org_id = ${orgId}`;
+    sql:ExecutionResult|sql:Error result = dbClient->execute(deleteSubscriptionQuery);
+
+    if (result is sql:Error) {
+        log:printError("Error while deleting the subscription identified by orgId.", orgId = orgId, 'error = result);
+        return error("Error while deleting the subscription in the database");
+    } else {
+        log:printDebug("Successfully deleted the subscription.", orgId = orgId);
+    }
+}
+
+# Delete a subscription based on the organization handle
+#
+# + orgHandle - The organization handle of the subscription object to be deleted
+# + return - Error if happened during the database deletion
+public function deleteSubscriptionByOrgHandle(string orgHandle) returns error? {
+    log:printDebug("Deleting the subscription in the database based on orgHandle", orgHandle = orgHandle);
+    sql:ParameterizedQuery deleteSubscriptionQuery = `DELETE FROM subscription WHERE org_handle = ${orgHandle}`;
+    sql:ExecutionResult|sql:Error result = dbClient->execute(deleteSubscriptionQuery);
+
+    if (result is sql:Error) {
+        log:printError("Error while deleting the subscription identified by orgHandle.", orgHandle = orgHandle, 
+            'error = result);
+        return error("Error while deleting the subscription in the database");
+    } else {
+        log:printDebug("Successfully deleted the subscription.", orgHandle = orgHandle);
+    }
+}
+
 # Adds attribute object to the database
 #
 # + attribute - The object needs to be added to the database
