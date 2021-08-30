@@ -1,6 +1,9 @@
 public type SubscriptionTierMappingsRequest record {|
-    int offset = 0;
-    int 'limit = 0;
+    Pagination pagination = {};
+|};
+
+public type UpdateSubscriptionResponse record {|
+    Subscription subscription = {};
 |};
 
 public type CreateTierRequest record {|
@@ -14,6 +17,10 @@ public type CreateAttributeRequest record {|
 public type SubscriptionTierMappingsResponse record {|
     SubscriptionTierMappings subscription_tier_mappings = {};
     Pagination pagination = {};
+|};
+
+public type UpdateSubscriptionRequest record {|
+    Subscription subscription = {};
 |};
 
 public type Tier record {|
@@ -53,8 +60,16 @@ public type GetTierDetailRequest record {|
     string org_identifier = "";
 |};
 
+public type DeleteSubscriptionRequest record {|
+    string identifier = "";
+|};
+
 public type CreateTierResponse record {|
     Tier tier = {};
+|};
+
+public type DeleteSubscriptionResponse record {|
+    string identifier = "";
 |};
 
 public type Pagination record {|

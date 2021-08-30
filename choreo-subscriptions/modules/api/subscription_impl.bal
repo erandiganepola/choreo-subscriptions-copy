@@ -241,6 +241,95 @@ public function createSubscription(CreateSubscriptionRequest createSubscriptionR
     }
 }
 
+# Updates an existing subscription object in the database
+#
+# + updateSubscriptionRequest - The subscription object with new attributes
+# + return - updated subscription object
+public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionRequest) returns 
+        UpdateSubscriptionResponse|error {
+    log:printDebug("Updating a subscription in the database", orgId = updateSubscriptionRequest.subscription.org_id, 
+        orgHandle = updateSubscriptionRequest.subscription.org_handle);
+    db:SubscriptionDAO subscriptionDAOin = {
+        id: updateSubscriptionRequest.subscription.id,
+        org_id: updateSubscriptionRequest.subscription.org_id,
+        org_handle: updateSubscriptionRequest.subscription.org_handle,
+        tier_id: updateSubscriptionRequest.subscription.tier_id,
+        billing_date: updateSubscriptionRequest.subscription.billing_date,
+        status: updateSubscriptionRequest.subscription.status
+    };
+
+    error? result = db:updateSubscription(subscriptionDAOin);
+    if (result is error) {
+        return result;
+    } else {
+        db:SubscriptionDAO|error subscriptionDAOOut = db:getSubscription(updateSubscriptionRequest.subscription.id);
+        if (subscriptionDAOOut is db:SubscriptionDAO) {
+            UpdateSubscriptionResponse updateSubscriptionResponse = {
+                subscription: {
+                    id: <string>subscriptionDAOOut?.id,
+                    org_id: subscriptionDAOOut.org_id,
+                    org_handle: subscriptionDAOOut.org_handle,
+                    tier_id: subscriptionDAOOut.tier_id,
+                    billing_date: subscriptionDAOOut.billing_date,
+                    status: subscriptionDAOOut.status,
+                    created_at: <int>subscriptionDAOOut?.created_at
+                }
+            };
+            return updateSubscriptionResponse;
+        } else {
+            return subscriptionDAOOut;
+        }
+    }
+}
+
+# Deletes an existing subscription object in the database identified by id
+#
+# + id - The id attribute of the subscription to be deleted
+# + return - id of the deleted subscription
+public function deleteSubscription(string subscriptionId) returns DeleteSubscriptionResponse|error {
+    log:printDebug("Deleting a subscription in the database identified by id", subscriptionId = subscriptionId);
+    error? result = db:deleteSubscription(subscriptionId);
+    if (result is error) {
+        return result;
+    } else {
+        return {
+            identifier: subscriptionId
+        };
+    }
+}
+
+# Deletes an existing subscription object in the database identified by organization uuid
+#
+# + orgId - The org uuid attribute of the subscription to be deleted
+# + return - org uuid of the deleted subscription
+public function deleteSubscriptionByOrgId(string orgId) returns DeleteSubscriptionResponse|error {
+    log:printDebug("Deleting a subscription in the database identified by organization UUID", orgId = orgId);
+    error? result = db:deleteSubscriptionByOrgId(orgId);
+    if (result is error) {
+        return result;
+    } else {
+        return {
+            identifier: orgId
+        };
+    }
+}
+
+# Deletes an existing subscription object in the database identified by organization handle
+#
+# + orgHandle - The org handle attribute of the subscription to be deleted
+# + return - org handle of the deleted subscription
+public function deleteSubscriptionByOrgHandle(string orgHandle) returns DeleteSubscriptionResponse|error {
+    log:printDebug("Deleting a subscription in the database identified by organization handle", orgHandle = orgHandle);
+    error? result = db:deleteSubscriptionByOrgHandle(orgHandle);
+    if (result is error) {
+        return result;
+    } else {
+        return {
+            identifier: orgHandle
+        };
+    }
+}
+
 # Creates a new attribute for rate limiting. Ex : number_of_organizations per user
 #
 # + createAttributeRequest - The attribute object needs to be created
