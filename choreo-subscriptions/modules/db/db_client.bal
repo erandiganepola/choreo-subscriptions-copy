@@ -57,7 +57,7 @@ public function getSubscriptionForOrgId(string orgId) returns SubscriptionDAO|er
     } else {
         log:printError("Error retrieving subscription for organization uuid from the database.", 
             'error = subscriptionRecord);
-        return error("Error retrieving subscription from the database.");
+        return error("Error retrieving subscription from the database for orgId: " + orgId);
     }
 }
 
@@ -83,7 +83,7 @@ public function getSubscriptionForOrgHandle(string orgHandle) returns Subscripti
         return subscriptionRecord.value;
     } else {
         log:printError("Error retrieving subscription for org handle from the database.", 'error = subscriptionRecord);
-        return error("Error retrieving subscription from the database.");
+        return error("Error retrieving subscription from the database for orgHandle: " + orgHandle);
     }
 }
 
@@ -109,7 +109,7 @@ public function getSubscription(string subscriptionId) returns SubscriptionDAO|e
         return <SubscriptionDAO>subscription.value;
     } else {
         log:printError("Error while retrieving subscription details", id = subscriptionId, 'error = subscription);
-        return subscription;
+        return error("Error while retrieving subscription details from the database for id: " + subscriptionId);
     }
 }
 
@@ -135,7 +135,7 @@ public function getAttribute(string attributeId) returns AttributeDAO|error {
         return <AttributeDAO>attribute.value;
     } else {
         log:printError("Error while retrieving attribute details", id = attributeId, 'error = attribute);
-        return attribute;
+        return error("Error while retrieving attribute details from the database for the attribute Id: " + attributeId);
     }
 }
 
@@ -176,7 +176,7 @@ public function getTier(string tierId) returns Tier|error {
 
     if (loopError is error) {
         log:printError("Error occured while retrieving tier from the database.", tierId = tierId, 'error = loopError);
-        return loopError;
+        return error("Error while getting tier resource quotas from the database for tier Id: " + tierId);
     } else {
         tier.quota_limits = tierQuotas;
         log:printDebug("Successfully retrieved the tier from the database", tierId = tierId);
@@ -206,7 +206,7 @@ public function getTierQuotas(string tierId) returns TierQuotas|error {
 
     if (loopError is error) {
         log:printError("Error retrieving quota from the database.", tierId = tierId, 'error = loopError);
-        return loopError;
+        return error("Error while getting tier quotas from the database for tier id: " + tierId);
     } else {
         log:printDebug("Successfully retrieved tier limits from the database", tierId = tierId);
         return tierQuotas;
@@ -225,7 +225,7 @@ public function addTier(TierDAO tier) returns error? {
 
     if (result is sql:Error) {
         log:printError("Error while creating tier in database.", name = tier.name, 'error = result);
-        return result;
+        return error("Error while creating tier in the database.");
     } else {
         log:printDebug("Successfully created the tier in database.", name = tier.name);
     }
@@ -245,10 +245,86 @@ public function addSubscription(SubscriptionDAO subscription) returns error? {
     if (result is sql:Error) {
         log:printError("Error while creating subscription.", org_id = subscription.org_id, 
             org_handle = subscription.org_handle, tier_id = subscription.tier_id, 'error = result);
-        return result;
+        return error("Error while creating subscription in the database.");
     } else {
         log:printDebug("Successfully created the subscription in database.", org_id = subscription.org_id, 
             org_handle = subscription.org_handle, tier_id = subscription.tier_id);
+    }
+}
+
+# Update a subscription available in the database
+#
+# + subscription - The subscription object with the updated properties
+# + return - Error if happened during the database update
+public function updateSubscription(SubscriptionDAO subscription) returns error? {
+    log:printDebug("Updating the subscription in the database", orgId = subscription.org_id, 
+        orgHandle = subscription.org_handle);
+    sql:ParameterizedQuery updateSubscriptionQuery = `UPDATE subscription SET org_id = ${subscription.org_id},
+        org_handle = ${subscription.org_handle}, tier_id = ${subscription.tier_id},
+        billing_date = ${subscription.billing_date}, status = ${subscription.status}
+        WHERE id = ${subscription?.id}`;
+    sql:ExecutionResult|sql:Error result = dbClient->execute(updateSubscriptionQuery);
+
+    if (result is sql:Error) {
+        log:printError("Error while updating subscription.", orgId = subscription.org_id, 
+            orgHandle = subscription.org_handle, 'error = result);
+        return error("Error while updating the subscription in the database");
+    } else {
+        log:printDebug("Successfully updated the subscription.", orgId = subscription.org_id, 
+            orgHandle = subscription.org_handle);
+    }
+}
+
+# Delete a subscription based on the subscription id
+#
+# + subscriptionId - The id of the subscription object to be deleted
+# + return - Error if happened during the database deletion
+public function deleteSubscription(string subscriptionId) returns error? {
+    log:printDebug("Deleting the subscription in the database based on id", subscriptionId = subscriptionId);
+    sql:ParameterizedQuery deleteSubscriptionQuery = `DELETE FROM subscription WHERE id = ${subscriptionId}`;
+    sql:ExecutionResult|sql:Error result = dbClient->execute(deleteSubscriptionQuery);
+
+    if (result is sql:Error) {
+        log:printError("Error while deleting the subscription identified by id.", subscriptionId = subscriptionId, 
+            'error = result);
+        return error("Error while deleting the subscription in the database");
+    } else {
+        log:printDebug("Successfully deleted the subscription.", subscriptionId = subscriptionId);
+    }
+}
+
+# Delete a subscription based on the organization id
+#
+# + orgId - The organization uuid of the subscription object to be deleted
+# + return - Error if happened during the database deletion
+public function deleteSubscriptionByOrgId(string orgId) returns error? {
+    log:printDebug("Deleting the subscription in the database based on orgId", orgId = orgId);
+    sql:ParameterizedQuery deleteSubscriptionQuery = `DELETE FROM subscription WHERE org_id = ${orgId}`;
+    sql:ExecutionResult|sql:Error result = dbClient->execute(deleteSubscriptionQuery);
+
+    if (result is sql:Error) {
+        log:printError("Error while deleting the subscription identified by orgId.", orgId = orgId, 'error = result);
+        return error("Error while deleting the subscription in the database");
+    } else {
+        log:printDebug("Successfully deleted the subscription.", orgId = orgId);
+    }
+}
+
+# Delete a subscription based on the organization handle
+#
+# + orgHandle - The organization handle of the subscription object to be deleted
+# + return - Error if happened during the database deletion
+public function deleteSubscriptionByOrgHandle(string orgHandle) returns error? {
+    log:printDebug("Deleting the subscription in the database based on orgHandle", orgHandle = orgHandle);
+    sql:ParameterizedQuery deleteSubscriptionQuery = `DELETE FROM subscription WHERE org_handle = ${orgHandle}`;
+    sql:ExecutionResult|sql:Error result = dbClient->execute(deleteSubscriptionQuery);
+
+    if (result is sql:Error) {
+        log:printError("Error while deleting the subscription identified by orgHandle.", orgHandle = orgHandle, 
+            'error = result);
+        return error("Error while deleting the subscription in the database");
+    } else {
+        log:printDebug("Successfully deleted the subscription.", orgHandle = orgHandle);
     }
 }
 
@@ -264,7 +340,7 @@ public function addAttribute(AttributeDAO attribute) returns error? {
 
     if (result is sql:Error) {
         log:printError("Error while creating quota attribute.", name = attribute.name, 'error = result);
-        return result;
+        return error("Error while creating quota attribute in database");
     } else {
         log:printDebug("Successfully added the attribute.", name = attribute.name);
     }
@@ -283,7 +359,7 @@ public function addQuotaRecord(QuotaRecord quotaRecord) returns error? {
     if (result is sql:Error) {
         log:printError("Error while adding attribute to quota.", name = quotaRecord.attribute_name, 
             tier_id = quotaRecord?.tier_id, 'error = result);
-        return result;
+        return error("Error while adding a quota attribute to the database");
     } else {
         log:printDebug("Successfully added new attribute to quota.", name = quotaRecord.attribute_name, 
             tier_id = quotaRecord?.tier_id);

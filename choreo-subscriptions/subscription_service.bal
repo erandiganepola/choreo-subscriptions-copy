@@ -25,6 +25,18 @@ service "SubscriptionService" on ep {
     remote function CreateSubscription(api:CreateSubscriptionRequest value) returns api:CreateSubscriptionResponse|error {
         return api:createSubscription(value);
     }
+    remote function UpdateSubscription(api:UpdateSubscriptionRequest value) returns api:UpdateSubscriptionResponse|error {
+        return api:updateSubscription(value);
+    }
+    remote function DeleteSubscription(api:DeleteSubscriptionRequest value) returns api:DeleteSubscriptionResponse|error {
+        return api:deleteSubscription(value.identifier);
+    }
+    remote function DeleteSubscriptionByOrgId(api:DeleteSubscriptionRequest value) returns api:DeleteSubscriptionResponse|error {
+        return api:deleteSubscriptionByOrgId(value.identifier);
+    }
+    remote function DeleteSubscriptionByOrgHandle(api:DeleteSubscriptionRequest value) returns api:DeleteSubscriptionResponse|error {
+        return api:deleteSubscriptionByOrgHandle(value.identifier);
+    }
     remote function CreateAttribute(api:CreateAttributeRequest value) returns api:CreateAttributeResponse|error {
         return api:createAttribute(value);
     }
