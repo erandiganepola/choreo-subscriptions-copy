@@ -12,7 +12,8 @@ TierQuotas mockTierQuotas = {
     integration_quota: 15,
     service_quota: 10,
     api_quota: 20,
-    remote_app_quota: 10
+    remote_app_quota: 10,
+    step_quota: 1000
 };
 
 Tier mockTier = {
@@ -33,6 +34,32 @@ SubscriptionDAO mockSubscriptionDAO = {
     status: "ACTIVE",
     created_at: 1627639797657
 };
+
+SubscriptionTierMapping mockSubscriptionTierMapping = {
+    org_id: "0ccca02-643a43ae-a38-200f2b",
+    tier_id: "9nffg02-612k12ae-a38-kiod2b",
+    org_handle: "jhondoe",
+    tier_name: "Free Tier",
+    billing_date: 1627639797657,
+    step_quota: 1000
+};
+
+SubscriptionTierMapping[] mockSubscriptionTierMappings = [{
+    org_id: "0ccca02-643a43ae-a38-200f2b",
+    tier_id: "9nffg02-612k12ae-a38-kiod2b",
+    org_handle: "jhondoe",
+    tier_name: "Free Tier",
+    billing_date: 1627639797667,
+    step_quota: 1000
+}, 
+{
+    org_id: "lk78ot-643a43ae-a38-2oof2b",
+    tier_id: "9nffg02-600ki98ae-a38g-kbnjb",
+    org_handle: "bessjob",
+    tier_name: "Enterprise Tier",
+    billing_date: 1627639797677,
+    step_quota: 1000000
+}];
 
 AttributeDAO mockAttributeDAO = {
     id: "496b70d7-2ab6-440-405-dde8f64",
@@ -68,6 +95,26 @@ function testGetSubscriptionForOrgHandle() {
     SubscriptionDAO|error result = getSubscriptionForOrgHandle("jhondoe");
 
     test:assertEquals(result, mockSubscriptionDAO);
+}
+
+@test:Config {
+    groups: ["db"]
+}
+function testGetSubscriptionTierMappingForOrgId() {
+    test:prepare(dbClient).when("query").thenReturn(returnMockedSubscriptionTierJoinStream());
+    SubscriptionTierMapping|error result = getSubscriptionTierMappingForOrgId("0000");
+
+    test:assertEquals(result, mockSubscriptionTierMapping);
+}
+
+@test:Config {
+    groups: ["db"]
+}
+function testGetSubscriptionTierMappings() {
+    test:prepare(dbClient).when("query").thenReturn(returnMockedSubscriptionTierJoinsStream());
+    SubscriptionTierMapping[]|error result = getSubscriptionTierMappings(0, 10);
+
+    test:assertEquals(result, mockSubscriptionTierMappings);
 }
 
 @test:Config {
@@ -122,6 +169,16 @@ function returnMockedTierQuotaJoinStream() returns stream<TierQuotaJoin, error> 
     return tierQuotaJoinStream;
 }
 
+function returnMockedSubscriptionTierJoinStream() returns stream<SubscriptionTierJoin, error> {
+    stream<SubscriptionTierJoin, error> subscriptionTierJoinStream = new (new SubscriptionTierJoinStreamImplementor());
+    return subscriptionTierJoinStream;
+}
+
+function returnMockedSubscriptionTierJoinsStream() returns stream<SubscriptionTierJoin, error> {
+    stream<SubscriptionTierJoin, error> subscriptionTierJoinStream = new (new SubscriptionTierJoinsStreamImplementor());
+    return subscriptionTierJoinStream;
+}
+
 function returnMockedSubscriptionDAOStream() returns stream<SubscriptionDAO, error> {
     stream<SubscriptionDAO, error> subscriptionDAOStream = new (new SubscriptionDAOStreamImplementor());
     return subscriptionDAOStream;
@@ -138,7 +195,8 @@ class TierQuotasStreamImplementor {
         {attribute_name: "service_quota", threshold: 10}, 
         {attribute_name: "integration_quota", threshold: 15}, 
         {attribute_name: "api_quota", threshold: 20}, 
-        {attribute_name: "remote_app_quota", threshold: 10}
+        {attribute_name: "remote_app_quota", threshold: 10}, 
+        {attribute_name: "step_quota", threshold: 1000}
     ];
 
     isolated function init() {
@@ -190,6 +248,15 @@ class TierQuotaJoinStreamImplementor {
         created_at: 1627639797657,
         attribute_name: "remote_app_quota",
         threshold: 10
+    }, 
+    {
+        id: "0ccca02-643a43ae-a38-200f2b",
+        name: "Free Tier",
+        description: "Free allocation to tryout choreo",
+        cost: 0,
+        created_at: 1627639797657,
+        attribute_name: "step_quota",
+        threshold: 1000
     }];
 
     isolated function init() {
@@ -200,6 +267,63 @@ class TierQuotaJoinStreamImplementor {
             record {|TierQuotaJoin value;|} tierQuotaJoin = {value: self.currentEntries[self.index]};
             self.index += 1;
             return tierQuotaJoin;
+        }
+    }
+}
+
+class SubscriptionTierJoinStreamImplementor {
+    private int index = 0;
+    private SubscriptionTierJoin[] currentEntries = [{
+        org_id: "0ccca02-643a43ae-a38-200f2b",
+        tier_id: "9nffg02-612k12ae-a38-kiod2b",
+        org_handle: "jhondoe",
+        tier_name: "Free Tier",
+        billing_date: 1627639797657,
+        attribute_name: "step_quota",
+        threshold: 1000
+    }];
+
+    isolated function init() {
+    }
+
+    public isolated function next() returns record {|SubscriptionTierJoin value;|}|error? {
+        if (self.index < self.currentEntries.length()) {
+            record {|SubscriptionTierJoin value;|} subscriptionTierJoin = {value: self.currentEntries[self.index]};
+            self.index += 1;
+            return subscriptionTierJoin;
+        }
+    }
+}
+
+class SubscriptionTierJoinsStreamImplementor {
+    private int index = 0;
+    private SubscriptionTierJoin[] currentEntries = [{
+        org_id: "0ccca02-643a43ae-a38-200f2b",
+        tier_id: "9nffg02-612k12ae-a38-kiod2b",
+        org_handle: "jhondoe",
+        tier_name: "Free Tier",
+        billing_date: 1627639797667,
+        attribute_name: "step_quota",
+        threshold: 1000
+    }, 
+    {
+        org_id: "lk78ot-643a43ae-a38-2oof2b",
+        tier_id: "9nffg02-600ki98ae-a38g-kbnjb",
+        org_handle: "bessjob",
+        tier_name: "Enterprise Tier",
+        billing_date: 1627639797677,
+        attribute_name: "step_quota",
+        threshold: 1000000
+    }];
+
+    isolated function init() {
+    }
+
+    public isolated function next() returns record {|SubscriptionTierJoin value;|}|error? {
+        if (self.index < self.currentEntries.length()) {
+            record {|SubscriptionTierJoin value;|} subscriptionTierJoin = {value: self.currentEntries[self.index]};
+            self.index += 1;
+            return subscriptionTierJoin;
         }
     }
 }

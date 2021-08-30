@@ -1,3 +1,7 @@
+public type SubscriptionTierMappingsRequest record {|
+    Pagination pagination = {};
+|};
+
 public type UpdateSubscriptionResponse record {|
     Subscription subscription = {};
 |};
@@ -8,6 +12,11 @@ public type CreateTierRequest record {|
 
 public type CreateAttributeRequest record {|
     Attribute attribute = {};
+|};
+
+public type SubscriptionTierMappingsResponse record {|
+    SubscriptionTierMappings subscription_tier_mappings = {};
+    Pagination pagination = {};
 |};
 
 public type UpdateSubscriptionRequest record {|
@@ -24,6 +33,7 @@ public type Tier record {|
     int integration_quota = 0;
     int api_quota = 0;
     int remote_app_quota = 0;
+    int step_quota = 0;
 |};
 
 public type Attribute record {|
@@ -31,6 +41,15 @@ public type Attribute record {|
     string name = "";
     string description = "";
     int created_at = 0;
+|};
+
+public type SubscriptionTierMapping record {|
+    string org_id = "";
+    string org_handle = "";
+    string tier_id = "";
+    string tier_name = "";
+    int billing_date = 0;
+    int step_quota = 0;
 |};
 
 public type CreateSubscriptionRequest record {|
@@ -53,6 +72,12 @@ public type DeleteSubscriptionResponse record {|
     string identifier = "";
 |};
 
+public type Pagination record {|
+    int offset = 0;
+    int 'limit = 0;
+    int total = 0;
+|};
+
 public type CreateSubscriptionResponse record {|
     Subscription subscription = {};
 |};
@@ -73,4 +98,16 @@ public type GetTierDetailResponse record {|
 
 public type CreateAttributeResponse record {|
     Attribute attribute = {};
+|};
+
+public type SubscriptionTierMappingResponse record {|
+    SubscriptionTierMapping subscription_tier_mapping = {};
+|};
+
+public type SubscriptionTierMappings record {|
+    SubscriptionTierMapping[] subscription_tier_mappings = [];
+|};
+
+public type SubscriptionTierMappingRequest record {|
+    string org_identifier = "";
 |};

@@ -38,6 +38,73 @@ public function getSubscriptionForOrgHandle(string orgHandle) returns GetTierDet
     }
 }
 
+# Returns the subscription tier mapping object for the given organization uuid
+#
+# + orgId - UUID of the interested organization
+# + return - Subscription tier mapping object
+public function getSubscriptionTierMappingForOrgId(string orgId) returns SubscriptionTierMappingResponse|error {
+    db:SubscriptionTierMapping|error subscriptionTierMapping = db:getSubscriptionTierMappingForOrgId(orgId);
+    if (subscriptionTierMapping is db:SubscriptionTierMapping) {
+        SubscriptionTierMappingResponse subscriptionTierMappingResponse = {
+            subscription_tier_mapping: {
+                org_id: subscriptionTierMapping.org_id,
+                org_handle: subscriptionTierMapping.org_handle,
+                tier_id: subscriptionTierMapping.tier_id,
+                tier_name: subscriptionTierMapping.tier_name,
+                billing_date: subscriptionTierMapping.billing_date,
+                step_quota: subscriptionTierMapping.step_quota
+            }
+        };
+        return subscriptionTierMappingResponse;
+    } else {
+        return subscriptionTierMapping;
+    }
+}
+
+# Returns a list of subscription tier mappings with pagination
+#
+# + offset - The offset value where the pagination start from
+# + limit - Number of objects need to be returned
+# + return - List of subscription tier object, pagination params
+public function getSubscriptionTierMappings(int offset, int 'limit) returns SubscriptionTierMappingsResponse|error {
+    int|error subscriptionCount = db:getSubscriptionsCount();
+    if (subscriptionCount is int) {
+        db:SubscriptionTierMapping[]|error subscriptionTierMappings = db:getSubscriptionTierMappings(offset, 'limit);
+        if (subscriptionTierMappings is db:SubscriptionTierMapping[]) {
+            int length = subscriptionTierMappings.length();
+            SubscriptionTierMapping[] paginatedSubscriptions = [];
+            foreach var i in 0 ..< length {
+                db:SubscriptionTierMapping subTierMapping = subscriptionTierMappings[i];
+                SubscriptionTierMapping subTierMappingDTO = {
+                    org_id: subTierMapping.org_id,
+                    org_handle: subTierMapping.org_handle,
+                    tier_id: subTierMapping.tier_id,
+                    tier_name: subTierMapping.tier_name,
+                    billing_date: subTierMapping.billing_date,
+                    step_quota: subTierMapping.step_quota
+                };
+                paginatedSubscriptions[i] = subTierMappingDTO;
+            }
+
+            SubscriptionTierMappingsResponse subscriptionTierMappingsResponse = {
+                subscription_tier_mappings: {
+                    subscription_tier_mappings: paginatedSubscriptions
+                },
+                pagination: {
+                    offset: offset,
+                    'limit: 'limit,
+                    total: subscriptionCount
+                }
+            };
+            return subscriptionTierMappingsResponse;
+        } else {
+            return subscriptionTierMappings;
+        }
+    } else {
+        return subscriptionCount;
+    }
+}
+
 # Creates a new Tier and returns
 #
 # + createTierRequest - The tier object needs to be created
@@ -83,6 +150,11 @@ public function createTier(CreateTierRequest createTierRequest) returns CreateTi
                 attribute_name: "remote_app_quota",
                 threshold: createTierRequest.tier.remote_app_quota
             };
+            quotaRecords[4] = {
+                tier_id: uuid,
+                attribute_name: "step_quota",
+                threshold: createTierRequest.tier.step_quota
+            };
 
             error? resultAddTierQuotas = db:addQuotaRecords(quotaRecords);
             if (resultAddTierQuotas is error) {
@@ -118,7 +190,8 @@ public function createTier(CreateTierRequest createTierRequest) returns CreateTi
                     service_quota: <int>tier?.quota_limits?.service_quota,
                     integration_quota: <int>tier?.quota_limits?.integration_quota,
                     api_quota: <int>tier?.quota_limits?.api_quota,
-                    remote_app_quota: <int>tier?.quota_limits?.remote_app_quota
+                    remote_app_quota: <int>tier?.quota_limits?.remote_app_quota,
+                    step_quota: <int>tier?.quota_limits?.step_quota
                 }
             };
         }
@@ -306,7 +379,8 @@ function getTierForOrgFromCache(string orgIdentifier) returns GetTierDetailRespo
                     integration_quota: <int>(check tierJson.integration_quota),
                     service_quota: <int>(check tierJson.service_quota),
                     api_quota: <int>(check tierJson.api_quota),
-                    remote_app_quota: <int>(check tierJson.remote_app_quota)
+                    remote_app_quota: <int>(check tierJson.remote_app_quota),
+                    step_quota: <int>(check tierJson.step_quota)
                 }
             };
             return getTierDetailResponse;
@@ -334,7 +408,8 @@ function getTierForOrgIdFromDB(string orgId) returns GetTierDetailResponse|error
                 service_quota: <int>tier?.quota_limits?.service_quota,
                 integration_quota: <int>tier?.quota_limits?.integration_quota,
                 api_quota: <int>tier?.quota_limits?.api_quota,
-                remote_app_quota: <int>tier?.quota_limits?.remote_app_quota
+                remote_app_quota: <int>tier?.quota_limits?.remote_app_quota,
+                step_quota: <int>tier?.quota_limits?.step_quota
             };
             string|error entry = cache:setEntry(orgId, tierDTO.toString());
             GetTierDetailResponse getTierDetailResponse = {tier: tierDTO};
@@ -362,7 +437,8 @@ function getTierForOrgHandleFromDB(string orgHandle) returns GetTierDetailRespon
                 service_quota: <int>tier?.quota_limits?.service_quota,
                 integration_quota: <int>tier?.quota_limits?.integration_quota,
                 api_quota: <int>tier?.quota_limits?.api_quota,
-                remote_app_quota: <int>tier?.quota_limits?.remote_app_quota
+                remote_app_quota: <int>tier?.quota_limits?.remote_app_quota,
+                step_quota: <int>tier?.quota_limits?.step_quota
             };
             string|error entry = cache:setEntry(orgHandle, tierDTO.toString());
             GetTierDetailResponse getTierDetailResponse = {tier: tierDTO};

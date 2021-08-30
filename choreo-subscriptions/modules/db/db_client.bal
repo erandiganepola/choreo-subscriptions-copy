@@ -87,6 +87,111 @@ public function getSubscriptionForOrgHandle(string orgHandle) returns Subscripti
     }
 }
 
+# Retrieve the subscription tier mapping for the given organization id from the DB
+#
+# + orgId - The uuid of the interested organization
+# + return - The subscription tier mapping object 
+public function getSubscriptionTierMappingForOrgId(string orgId) returns SubscriptionTierMapping|error {
+    log:printDebug("Getting subscription tier mapping from the database", orgId = orgId);
+    sql:ParameterizedQuery mappingQuery = `SELECT subscription.org_id, subscription.org_handle,
+        subscription.billing_date, tier.id AS tier_id, tier.name AS tier_name, quota.attribute_name, quota.threshold
+        FROM ((tier INNER JOIN quota ON tier.id = quota.tier_id) INNER JOIN subscription ON
+        tier.id = subscription.tier_id) WHERE subscription.org_id = ${orgId} AND quota.attribute_name = 'step_quota'`;
+    stream<record {}, error> mappingResult = dbClient->query(mappingQuery, SubscriptionTierJoin);
+    stream<SubscriptionTierJoin, sql:Error> mappingStream = <stream<SubscriptionTierJoin, sql:Error>>mappingResult;
+    record {|SubscriptionTierJoin value;|}|error? mappingRecord = mappingStream.next();
+
+    error? closeErr = mappingStream.close();
+    if (closeErr is error) {
+        log:printWarn("Error occured while closing database connection.", 'error = closeErr);
+    }
+
+    if (mappingRecord is record {|SubscriptionTierJoin value;|}) {
+        log:printDebug("Successfully retrieved subscription tier mapping for org uuid from the database", orgId = orgId);
+        SubscriptionTierMapping subscriptionTierMapping = {
+            org_id: mappingRecord.value.org_id,
+            org_handle: mappingRecord.value.org_handle,
+            tier_id: mappingRecord.value.tier_id,
+            tier_name: mappingRecord.value.tier_name,
+            billing_date: mappingRecord.value.billing_date,
+            step_quota: mappingRecord.value.threshold
+        };
+        return subscriptionTierMapping;
+    } else {
+        log:printError("Error retrieving subscription tier mapping for org uuid from the database.", 
+            'error = mappingRecord);
+        return error("Error retrieving subscription from the database.");
+    }
+}
+
+# Retrieve a list of subscription tier mappings with given offset and limit values
+#
+# + offset - The offset value from where the records to be retrieved
+# + limit - The number of records required
+# + return - Array of subscription tier mapping objects
+public function getSubscriptionTierMappings(int offset, int 'limit) returns SubscriptionTierMapping[]|error {
+    log:printDebug("Getting subscription tier mappings from the database", offset = offset, 'limit = 'limit);
+    sql:ParameterizedQuery mappingsQuery = `SELECT subscription.org_id, subscription.org_handle, subscription
+        .billing_date, tier.id AS tier_id, tier.name AS tier_name, quota.attribute_name, quota.threshold FROM ((tier
+        INNER JOIN quota ON tier.id = quota.tier_id) INNER JOIN subscription ON tier.id = subscription.tier_id) WHERE
+        quota.attribute_name = 'step_quota' ORDER BY subscription.org_id OFFSET ${offset} ROWS FETCH
+        NEXT ${'limit} ROWS ONLY`;
+
+    stream<record {}, error> mappingsResult = dbClient->query(mappingsQuery, SubscriptionTierJoin);
+    stream<SubscriptionTierJoin, sql:Error> mappingsStream = <stream<SubscriptionTierJoin, sql:Error>>mappingsResult;
+
+    SubscriptionTierMapping[] subscriptionTierMappings = [];
+    int count = 0;
+    error? loopError = mappingsStream.forEach(function(SubscriptionTierJoin subscriptionTierJoin) {
+        SubscriptionTierMapping subscriptionTierMapping = {
+            org_id: subscriptionTierJoin.org_id,
+            org_handle: subscriptionTierJoin.org_handle,
+            tier_id: subscriptionTierJoin.tier_id,
+            tier_name: subscriptionTierJoin.tier_name,
+            billing_date: subscriptionTierJoin.billing_date,
+            step_quota: subscriptionTierJoin.threshold
+        };
+        subscriptionTierMappings[count] = subscriptionTierMapping;
+        count += 1;
+    });
+
+    error? closeErr = mappingsStream.close();
+    if (closeErr is error) {
+        log:printWarn("Error occured while closing database connection.", 'error = closeErr);
+    }
+
+    if (loopError is error) {
+        log:printError("Error occured while retrieving subscription tier mappings from the database.", 
+            'error = loopError);
+        return error("Error occured while retrieving subscription tier mappings.");
+    } else {
+        log:printDebug("Successfully retrieved the tier from the database");
+        return subscriptionTierMappings;
+    }
+}
+
+# Retrieves the number of subscriptions available in the DB
+#
+# + return - Number of subscriptions available in the DB
+public function getSubscriptionsCount() returns int|error {
+    log:printDebug("Getting the count of subscriptions from the database");
+    sql:ParameterizedQuery subscriptionCountQuery = `SELECT COUNT(*) AS total FROM subscription`;
+    stream<record {}, error?> subscriptionCountResult = dbClient->query(subscriptionCountQuery);
+    record {|record {} value;|}|error? countResult = subscriptionCountResult.next();
+
+    error? closeError = subscriptionCountResult.close();
+    if (closeError is error) {
+        log:printWarn("Error while closing database connection", 'error = closeError);
+    }
+
+    if (countResult is record {|record {} value;|}) {
+        return <int>countResult.value["total"];
+    } else {
+        log:printError("Error occured while retrieving subsription count from the database", 'error = countResult);
+        return error("Error occured while retrieving subsription count from the database");
+    }
+}
+
 # Retrieves the subscription object with the given id from the database
 #
 # + subscriptionId - The id of the subscription interested in

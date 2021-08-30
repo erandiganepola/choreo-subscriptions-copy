@@ -19,6 +19,12 @@ service "SubscriptionService" on ep {
     remote function GetTierDetailsForOrgHandle(api:GetTierDetailRequest value) returns api:GetTierDetailResponse|error {
         return api:getSubscriptionForOrgHandle(value.org_identifier);
     }
+    remote function GetSubscriptionTierMappingForOrgId(api:SubscriptionTierMappingRequest value) returns api:SubscriptionTierMappingResponse|error {
+        return api:getSubscriptionTierMappingForOrgId(value.org_identifier);
+    }
+    remote function GetSubscriptionTierMappings(api:SubscriptionTierMappingsRequest value) returns api:SubscriptionTierMappingsResponse|error {
+        return api:getSubscriptionTierMappings(value.pagination.offset, value.pagination.'limit);
+    }
     remote function CreateTier(api:CreateTierRequest value) returns api:CreateTierResponse|error {
         return api:createTier(value);
     }
