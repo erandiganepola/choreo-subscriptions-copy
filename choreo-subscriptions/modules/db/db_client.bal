@@ -163,7 +163,7 @@ public function getSubscriptionTierMappings(int offset, int 'limit) returns Subs
     if (loopError is error) {
         log:printError("Error occured while retrieving subscription tier mappings from the database.", 
             'error = loopError);
-        return loopError;
+        return error("Error occured while retrieving subscription tier mappings.");
     } else {
         log:printDebug("Successfully retrieved the tier from the database");
         return subscriptionTierMappings;
