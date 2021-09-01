@@ -14,10 +14,19 @@ listener grpc:Listener ep = new (9090);
 service "SubscriptionService" on ep {
 
     remote function GetTierDetailsForOrgId(api:GetTierDetailRequest value) returns api:GetTierDetailResponse|error {
-        return api:getSubscriptionForOrgId(value.org_identifier);
+        return api:getTierDetailsForOrgId(value.org_identifier);
     }
     remote function GetTierDetailsForOrgHandle(api:GetTierDetailRequest value) returns api:GetTierDetailResponse|error {
-        return api:getSubscriptionForOrgHandle(value.org_identifier);
+        return api:getTierDetailsForOrgHandle(value.org_identifier);
+    }
+    remote function GetSubscription(api:GetSubscriptionRequest value) returns api:GetSubscriptionResponse|error {
+        return api:getSubscription(value.subscription_identifier);
+    }
+    remote function GetSubscriptionByOrgId(api:GetSubscriptionRequest value) returns api:GetSubscriptionResponse|error {
+        return api:getSubscriptionByOrgId(value.subscription_identifier);
+    }
+    remote function GetSubscriptionByOrgHandle(api:GetSubscriptionRequest value) returns api:GetSubscriptionResponse|error {
+        return api:getSubscriptionByOrgHandle(value.subscription_identifier);
     }
     remote function GetSubscriptionTierMappingForOrgId(api:SubscriptionTierMappingRequest value) returns api:SubscriptionTierMappingResponse|error {
         return api:getSubscriptionTierMappingForOrgId(value.org_identifier);
