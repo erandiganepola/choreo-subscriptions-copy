@@ -92,7 +92,7 @@ public function getSubscriptionByOrgId(string orgId) returns GetSubscriptionResp
 # + return - Subscription object requested
 public function getSubscriptionByOrgHandle(string orgHandle) returns GetSubscriptionResponse|error {
     log:printDebug("Getting subscription details for the organization handle", orgHandle = orgHandle);
-    db:SubscriptionDAO|error subscription = db:getSubscriptionForOrgId(orgHandle);
+    db:SubscriptionDAO|error subscription = db:getSubscriptionForOrgHandle(orgHandle);
     if (subscription is db:SubscriptionDAO) {
         GetSubscriptionResponse getSubscriptionResponse = {
             subscription: {
@@ -347,6 +347,7 @@ public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionR
                     created_at: <int>subscriptionDAOOut?.created_at
                 }
             };
+            error? cacheResult = cache:deleteEntry(subscriptionDAOOut.org_handle);
             return updateSubscriptionResponse;
         } else {
             return subscriptionDAOOut;
@@ -396,6 +397,7 @@ public function deleteSubscriptionByOrgHandle(string orgHandle) returns DeleteSu
     if (result is error) {
         return result;
     } else {
+        error? cacheResult = cache:deleteEntry(orgHandle);
         return {
             identifier: orgHandle
         };
