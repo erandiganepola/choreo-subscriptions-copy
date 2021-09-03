@@ -14,7 +14,7 @@ import choreo_subscriptions.cache;
 #
 # + orgId - uuid of the interested organization
 # + return - Subscribed tier object
-public function getSubscriptionForOrgId(string orgId) returns GetTierDetailResponse|error {
+public function getTierDetailsForOrgId(string orgId) returns GetTierDetailResponse|error {
     log:printDebug("Getting subscribed tier details for the organization", orgUuid = orgId);
     GetTierDetailResponse|error getTierDetailResponse = getTierForOrgFromCache(orgId);
     if (getTierDetailResponse is GetTierDetailResponse) {
@@ -28,13 +28,85 @@ public function getSubscriptionForOrgId(string orgId) returns GetTierDetailRespo
 #
 # + orgHandle - Handle of the interested organization
 # + return - Subscribed tier object
-public function getSubscriptionForOrgHandle(string orgHandle) returns GetTierDetailResponse|error {
+public function getTierDetailsForOrgHandle(string orgHandle) returns GetTierDetailResponse|error {
     log:printDebug("Getting subscribed tier details for the organization", orgHandle = orgHandle);
     GetTierDetailResponse|error getTierDetailResponse = getTierForOrgFromCache(orgHandle);
     if (getTierDetailResponse is GetTierDetailResponse) {
         return getTierDetailResponse;
     } else {
         return getTierForOrgHandleFromDB(orgHandle);
+    }
+}
+
+# Returns the subscription object for the given subscription id
+#
+# + subscriptionId - Id of the interested subscription
+# + return - Subscription object requested
+public function getSubscription(string subscriptionId) returns GetSubscriptionResponse|error {
+    log:printDebug("Getting subscription details for the subscription id", subscriptionId = subscriptionId);
+    db:SubscriptionDAO|error subscription = db:getSubscription(subscriptionId);
+    if (subscription is db:SubscriptionDAO) {
+        GetSubscriptionResponse getSubscriptionResponse = {
+            subscription: {
+                id: <string>subscription?.id,
+                org_id: subscription.org_id,
+                org_handle: subscription.org_handle,
+                tier_id: subscription.tier_id,
+                billing_date: subscription.billing_date,
+                status: subscription.status
+            }
+        };
+        return getSubscriptionResponse;
+    } else {
+        return subscription;
+    }
+}
+
+# Returns the subscription object for the given organization uuid
+#
+# + orgId - Id of the interested organization
+# + return - Subscription object requested
+public function getSubscriptionByOrgId(string orgId) returns GetSubscriptionResponse|error {
+    log:printDebug("Getting subscription details for the organization uuid", orgId = orgId);
+    db:SubscriptionDAO|error subscription = db:getSubscriptionForOrgId(orgId);
+    if (subscription is db:SubscriptionDAO) {
+        GetSubscriptionResponse getSubscriptionResponse = {
+            subscription: {
+                id: <string>subscription?.id,
+                org_id: subscription.org_id,
+                org_handle: subscription.org_handle,
+                tier_id: subscription.tier_id,
+                billing_date: subscription.billing_date,
+                status: subscription.status
+            }
+        };
+        return getSubscriptionResponse;
+    } else {
+        return subscription;
+    }
+}
+
+# Returns the subscription object for the given organization handle
+#
+# + orgHandle - Handle of the interested organization
+# + return - Subscription object requested
+public function getSubscriptionByOrgHandle(string orgHandle) returns GetSubscriptionResponse|error {
+    log:printDebug("Getting subscription details for the organization handle", orgHandle = orgHandle);
+    db:SubscriptionDAO|error subscription = db:getSubscriptionForOrgHandle(orgHandle);
+    if (subscription is db:SubscriptionDAO) {
+        GetSubscriptionResponse getSubscriptionResponse = {
+            subscription: {
+                id: <string>subscription?.id,
+                org_id: subscription.org_id,
+                org_handle: subscription.org_handle,
+                tier_id: subscription.tier_id,
+                billing_date: subscription.billing_date,
+                status: subscription.status
+            }
+        };
+        return getSubscriptionResponse;
+    } else {
+        return subscription;
     }
 }
 
@@ -275,6 +347,7 @@ public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionR
                     created_at: <int>subscriptionDAOOut?.created_at
                 }
             };
+            error? cacheResult = cache:deleteEntry(subscriptionDAOOut.org_handle);
             return updateSubscriptionResponse;
         } else {
             return subscriptionDAOOut;
@@ -284,17 +357,24 @@ public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionR
 
 # Deletes an existing subscription object in the database identified by id
 #
-# + id - The id attribute of the subscription to be deleted
+# + subscriptionId - The id attribute of the subscription to be deleted
 # + return - id of the deleted subscription
 public function deleteSubscription(string subscriptionId) returns DeleteSubscriptionResponse|error {
     log:printDebug("Deleting a subscription in the database identified by id", subscriptionId = subscriptionId);
-    error? result = db:deleteSubscription(subscriptionId);
-    if (result is error) {
-        return result;
+    log:printDebug("Getting the subscription from the database to get the orgHandle and invalidate the cache");
+    db:SubscriptionDAO|error subscriptionDAO = db:getSubscription(subscriptionId);
+    if (subscriptionDAO is db:SubscriptionDAO) {
+        error? result = db:deleteSubscription(subscriptionId);
+        if (result is error) {
+            return result;
+        } else {
+            error? cacheResult = cache:deleteEntry(subscriptionDAO.org_handle);
+            return {
+                identifier: subscriptionId
+            };
+        }
     } else {
-        return {
-            identifier: subscriptionId
-        };
+        return error("Error occured while deleting subscription");
     }
 }
 
@@ -304,13 +384,20 @@ public function deleteSubscription(string subscriptionId) returns DeleteSubscrip
 # + return - org uuid of the deleted subscription
 public function deleteSubscriptionByOrgId(string orgId) returns DeleteSubscriptionResponse|error {
     log:printDebug("Deleting a subscription in the database identified by organization UUID", orgId = orgId);
-    error? result = db:deleteSubscriptionByOrgId(orgId);
-    if (result is error) {
-        return result;
+    log:printDebug("Getting the subscription from the database to get the orgHandle and invalidate the cache");
+    db:SubscriptionDAO|error subscriptionDAO = db:getSubscriptionForOrgId(orgId);
+    if (subscriptionDAO is db:SubscriptionDAO) {
+        error? result = db:deleteSubscriptionByOrgId(orgId);
+        if (result is error) {
+            return result;
+        } else {
+            error? cacheResult = cache:deleteEntry(subscriptionDAO.org_handle);
+            return {
+                identifier: orgId
+            };
+        }
     } else {
-        return {
-            identifier: orgId
-        };
+        return error("Error occured while deleting subscription");
     }
 }
 
@@ -324,6 +411,7 @@ public function deleteSubscriptionByOrgHandle(string orgHandle) returns DeleteSu
     if (result is error) {
         return result;
     } else {
+        error? cacheResult = cache:deleteEntry(orgHandle);
         return {
             identifier: orgHandle
         };

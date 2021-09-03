@@ -14,6 +14,10 @@ public type CreateAttributeRequest record {|
     Attribute attribute = {};
 |};
 
+public type GetSubscriptionResponse record {|
+    Subscription subscription = {};
+|};
+
 public type SubscriptionTierMappingsResponse record {|
     SubscriptionTierMappings subscription_tier_mappings = {};
     Pagination pagination = {};
@@ -76,6 +80,10 @@ public type Pagination record {|
     int offset = 0;
     int 'limit = 0;
     int total = 0;
+|};
+
+public type GetSubscriptionRequest record {|
+    string identifier = "";
 |};
 
 public type CreateSubscriptionResponse record {|
