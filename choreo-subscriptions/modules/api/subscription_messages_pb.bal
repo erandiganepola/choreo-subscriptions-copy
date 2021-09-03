@@ -83,7 +83,7 @@ public type Pagination record {|
 |};
 
 public type GetSubscriptionRequest record {|
-    string subscription_identifier = "";
+    string identifier = "";
 |};
 
 public type CreateSubscriptionResponse record {|

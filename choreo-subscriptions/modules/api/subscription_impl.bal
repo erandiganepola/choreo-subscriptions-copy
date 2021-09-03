@@ -361,13 +361,20 @@ public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionR
 # + return - id of the deleted subscription
 public function deleteSubscription(string subscriptionId) returns DeleteSubscriptionResponse|error {
     log:printDebug("Deleting a subscription in the database identified by id", subscriptionId = subscriptionId);
-    error? result = db:deleteSubscription(subscriptionId);
-    if (result is error) {
-        return result;
+    log:printDebug("Getting the subscription from the database to get the orgHandle and invalidate the cache");
+    db:SubscriptionDAO|error subscriptionDAO = db:getSubscription(subscriptionId);
+    if (subscriptionDAO is db:SubscriptionDAO) {
+        error? result = db:deleteSubscription(subscriptionId);
+        if (result is error) {
+            return result;
+        } else {
+            error? cacheResult = cache:deleteEntry(subscriptionDAO.org_handle);
+            return {
+                identifier: subscriptionId
+            };
+        }        
     } else {
-        return {
-            identifier: subscriptionId
-        };
+        return error("Error occured while deleting subscription");
     }
 }
 
@@ -377,13 +384,20 @@ public function deleteSubscription(string subscriptionId) returns DeleteSubscrip
 # + return - org uuid of the deleted subscription
 public function deleteSubscriptionByOrgId(string orgId) returns DeleteSubscriptionResponse|error {
     log:printDebug("Deleting a subscription in the database identified by organization UUID", orgId = orgId);
-    error? result = db:deleteSubscriptionByOrgId(orgId);
-    if (result is error) {
-        return result;
+    log:printDebug("Getting the subscription from the database to get the orgHandle and invalidate the cache");
+    db:SubscriptionDAO|error subscriptionDAO = db:getSubscriptionForOrgId(orgId);
+    if (subscriptionDAO is db:SubscriptionDAO) {
+        error? result = db:deleteSubscriptionByOrgId(orgId);
+        if (result is error) {
+            return result;
+        } else {
+            error? cacheResult = cache:deleteEntry(subscriptionDAO.org_handle);
+            return {
+                identifier: orgId
+            };
+        }        
     } else {
-        return {
-            identifier: orgId
-        };
+        return error("Error occured while deleting subscription");
     }
 }
 

@@ -20,13 +20,13 @@ service "SubscriptionService" on ep {
         return api:getTierDetailsForOrgHandle(value.org_identifier);
     }
     remote function GetSubscription(api:GetSubscriptionRequest value) returns api:GetSubscriptionResponse|error {
-        return api:getSubscription(value.subscription_identifier);
+        return api:getSubscription(value.identifier);
     }
     remote function GetSubscriptionByOrgId(api:GetSubscriptionRequest value) returns api:GetSubscriptionResponse|error {
-        return api:getSubscriptionByOrgId(value.subscription_identifier);
+        return api:getSubscriptionByOrgId(value.identifier);
     }
     remote function GetSubscriptionByOrgHandle(api:GetSubscriptionRequest value) returns api:GetSubscriptionResponse|error {
-        return api:getSubscriptionByOrgHandle(value.subscription_identifier);
+        return api:getSubscriptionByOrgHandle(value.identifier);
     }
     remote function GetSubscriptionTierMappingForOrgId(api:SubscriptionTierMappingRequest value) returns api:SubscriptionTierMappingResponse|error {
         return api:getSubscriptionTierMappingForOrgId(value.org_identifier);
