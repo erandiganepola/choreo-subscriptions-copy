@@ -66,8 +66,8 @@ public function setEntry(string cacheKey, string value) returns string|error {
 # + cacheKey - The key of the pair need to be removed
 # + return - Caching request result or error
 public function deleteEntry(string cacheKey) returns error? {
-    log:printDebug("Trying to delete a key, value pair from redis", key = getPrefixedKey(cacheKey));
     string key = getPrefixedKey(cacheKey);
+    log:printDebug("Trying to delete a key, value pair from redis", key = key);
     var result = cacheClient->del([key]);
     if (result is int) {
         log:printDebug("Successfully deleted the entry from the cache. Reply from the redis server.", 
