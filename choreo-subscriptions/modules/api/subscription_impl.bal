@@ -372,7 +372,7 @@ public function deleteSubscription(string subscriptionId) returns DeleteSubscrip
             return {
                 identifier: subscriptionId
             };
-        }        
+        }
     } else {
         return error("Error occured while deleting subscription");
     }
@@ -395,7 +395,7 @@ public function deleteSubscriptionByOrgId(string orgId) returns DeleteSubscripti
             return {
                 identifier: orgId
             };
-        }        
+        }
     } else {
         return error("Error occured while deleting subscription");
     }
