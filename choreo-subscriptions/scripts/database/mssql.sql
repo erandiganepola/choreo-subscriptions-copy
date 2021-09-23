@@ -37,6 +37,7 @@ BEGIN
         status VARCHAR(128) NOT NULL,
         created_at BIGINT DEFAULT DATEDIFF_BIG(MILLISECOND,'1970-01-01 00:00:00.000', SYSUTCDATETIME()),
         PRIMARY KEY (org_id, tier_id),
+        UNIQUE (id),
         UNIQUE (org_id),
         UNIQUE (org_handle),
         CONSTRAINT FK_TierSubscription FOREIGN KEY (tier_id) REFERENCES tier(id)
@@ -75,15 +76,16 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='billing_tier' and xtype='U')
 BEGIN
     CREATE TABLE billing_tier (
         id VARCHAR(128) NOT NULL,
-        choreo_tier_id VARCHAR(128) NOT NULL,
+        tier_id VARCHAR(128) NOT NULL,
         product_id VARCHAR(128) NOT NULL,
         price_id VARCHAR(128) NOT NULL,
-        currency VARCHAR(128) NOT NULL,
-        recurring_interval VARCHAR(128) NOT NULL,
+        currency VARCHAR(20) NOT NULL,
+        recurring_interval VARCHAR(10) NOT NULL,
         UNIQUE (product_id),
         UNIQUE (price_id),
-        UNIQUE (choreo_tier_id),
-        PRIMARY KEY (choreo_tier_id, product_id)
+        UNIQUE (tier_id),
+        PRIMARY KEY (tier_id, product_id),
+        CONSTRAINT FK_Tier FOREIGN KEY (tier_id) REFERENCES tier(id)
     );
 END
 GO
@@ -92,11 +94,12 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='billing_subscription' and xt
 BEGIN
     CREATE TABLE billing_subscription (
         id VARCHAR(128) NOT NULL,
-        choreo_subscription_id VARCHAR(128) NOT NULL,
+        subscription_id VARCHAR(128) NOT NULL,
         stripe_subscription_id VARCHAR(128) NOT NULL,
         stripe_subscription_item_id VARCHAR(128) NOT NULL,
-        UNIQUE (choreo_subscription_id),
-        PRIMARY KEY (choreo_subscription_id, stripe_subscription_id)
+        UNIQUE (subscription_id),
+        PRIMARY KEY (subscription_id, stripe_subscription_id),
+        CONSTRAINT FK_ChoreoSubscription FOREIGN KEY (subscription_id) REFERENCES subscription(id)
     );
 END
 GO
