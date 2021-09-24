@@ -36,9 +36,9 @@ INSERT INTO choreo_subscriptions_db.dbo.billing_tier (id,tier_id,product_id,pric
 	 (N'01ec1491-316e-1c84-9195-5bbb347a8a0b',N'01ebea43-be76-1d7a-b410-2d1b873c57af',N'prod_K7pD0xG5AqXUzG',N'price_2JY0lgEeYOVsvOhWyxCaQmNy',N'USD',N'month');
 GO
 
-INSERT INTO choreo_subscriptions_db.dbo.billing_subscription (id,subscription_id,stripe_subscription_id,stripe_subscription_item_id) VALUES
-	 (N'01ec148a-c530-1e10-9d57-44bf012eb896',N'0000060f-569d-4394-b689-4624b9a31b5b',N'sub_KCPaTebN0yENzY',N'si_KCPa3qnZBTVqO3'),
-	 (N'01ec148a-c367-11d8-b08c-8c01a83304e7',N'00151c87-07c0-48b5-ad68-103b1f6f1a90',N'sub_KCPaTebN1yENzY',N'si_KCPa4qnZBTVqO3');
+INSERT INTO choreo_subscriptions_db.dbo.billing_subscription (id,subscription_id,customer_id,stripe_subscription_id,stripe_subscription_item_id) VALUES
+	 (N'01ec148a-c530-1e10-9d57-44bf012eb896',N'0000060f-569d-4394-b689-4624b9a31b5b',N'cus_KCPa1wMr4UJjDX',N'sub_KCPaTebN0yENzY',N'si_KCPa3qnZBTVqO3'),
+	 (N'01ec148a-c367-11d8-b08c-8c01a83304e7',N'00151c87-07c0-48b5-ad68-103b1f6f1a90',N'cus_KCPa1wMr3UJjDX',N'sub_KCPaTebN1yENzY',N'si_KCPa4qnZBTVqO3');
 GO
 
 INSERT INTO choreo_subscriptions_db.dbo.billing_account (id,org_id,customer_id) VALUES

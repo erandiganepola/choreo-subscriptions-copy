@@ -95,6 +95,7 @@ BEGIN
     CREATE TABLE billing_subscription (
         id VARCHAR(128) NOT NULL,
         subscription_id VARCHAR(128) NOT NULL,
+        customer_id VARCHAR(128) NOT NULL,
         stripe_subscription_id VARCHAR(128) NOT NULL,
         stripe_subscription_item_id VARCHAR(128) NOT NULL,
         UNIQUE (subscription_id),
