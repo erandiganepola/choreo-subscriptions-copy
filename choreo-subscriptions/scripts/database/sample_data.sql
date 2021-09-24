@@ -3,7 +3,7 @@ INSERT INTO choreo_subscriptions_db.dbo.[attribute] (id,name,description,created
 	 (N'01ebea3b-2dba-182a-9aad-b68df13c86d0',N'api_quota',N'Number of apis can be created',1627639797657),
 	 (N'01ebea3c-0b3c-1bf8-a1a7-22eb4cc3566e',N'remote_app_quota',N'Number of remote apps can be created',1627639797657),
 	 (N'01ebea43-d02d-1c12-8ae0-1b5947056fc1',N'integration_quota',N'Number of integrations can be created',1627639797657),
-	 (N'01ebeasw-d02d-1c12-8ae0-1b5947056fc1',N'step_quota',N'Number of steps allocated',1627639797657),
+	 (N'01ec0a51-c895-14fe-9dc7-1b40e9c0a60a',N'step_quota',N'Number of steps allocated',1627639797657),
 	 (N'01ec1c6d-956e-175a-ad64-0f27c561adb8',N'developer_count',N'Number of developers can be allocated',1627639797657);
 GO
 
