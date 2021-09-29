@@ -259,7 +259,7 @@ class TierQuotaJoinStreamImplementor {
         created_at: 1627639797657,
         attribute_name: "step_quota",
         threshold: 1000
-    },{
+    }, {
         id: "0ccca02-643a43ae-a38-200f2b",
         name: "Free Tier",
         description: "Free allocation to tryout choreo",
