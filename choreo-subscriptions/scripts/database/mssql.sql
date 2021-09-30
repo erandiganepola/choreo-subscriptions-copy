@@ -100,7 +100,6 @@ BEGIN
         stripe_subscription_item_id VARCHAR(128) NOT NULL,
         UNIQUE (subscription_id),
         PRIMARY KEY (subscription_id, stripe_subscription_id),
-        CONSTRAINT FK_ChoreoSubscription FOREIGN KEY (subscription_id) REFERENCES subscription(id)
     );
 END
 GO
