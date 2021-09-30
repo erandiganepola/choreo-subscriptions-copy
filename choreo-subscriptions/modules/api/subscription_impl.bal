@@ -227,6 +227,11 @@ public function createTier(CreateTierRequest createTierRequest) returns CreateTi
                 attribute_name: "step_quota",
                 threshold: createTierRequest.tier.step_quota
             };
+            quotaRecords[5] = {
+                tier_id: uuid,
+                attribute_name: "developer_count",
+                threshold: createTierRequest.tier.developer_count
+            };
 
             error? resultAddTierQuotas = db:addQuotaRecords(quotaRecords);
             if (resultAddTierQuotas is error) {
@@ -263,7 +268,8 @@ public function createTier(CreateTierRequest createTierRequest) returns CreateTi
                     integration_quota: <int>tier?.quota_limits?.integration_quota,
                     api_quota: <int>tier?.quota_limits?.api_quota,
                     remote_app_quota: <int>tier?.quota_limits?.remote_app_quota,
-                    step_quota: <int>tier?.quota_limits?.step_quota
+                    step_quota: <int>tier?.quota_limits?.step_quota,
+                    developer_count: <int>tier?.quota_limits?.developer_count
                 }
             };
         }
