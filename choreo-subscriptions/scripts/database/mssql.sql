@@ -99,7 +99,7 @@ BEGIN
         stripe_subscription_id VARCHAR(128) NOT NULL,
         stripe_subscription_item_id VARCHAR(128) NOT NULL,
         UNIQUE (subscription_id),
-        PRIMARY KEY (subscription_id, stripe_subscription_id),
+        PRIMARY KEY (subscription_id, stripe_subscription_id)
     );
 END
 GO
