@@ -227,6 +227,11 @@ public function createTier(CreateTierRequest createTierRequest) returns CreateTi
                 attribute_name: "step_quota",
                 threshold: createTierRequest.tier.step_quota
             };
+            quotaRecords[5] = {
+                tier_id: uuid,
+                attribute_name: "developer_count",
+                threshold: createTierRequest.tier.developer_count
+            };
 
             error? resultAddTierQuotas = db:addQuotaRecords(quotaRecords);
             if (resultAddTierQuotas is error) {
@@ -263,7 +268,8 @@ public function createTier(CreateTierRequest createTierRequest) returns CreateTi
                     integration_quota: <int>tier?.quota_limits?.integration_quota,
                     api_quota: <int>tier?.quota_limits?.api_quota,
                     remote_app_quota: <int>tier?.quota_limits?.remote_app_quota,
-                    step_quota: <int>tier?.quota_limits?.step_quota
+                    step_quota: <int>tier?.quota_limits?.step_quota,
+                    developer_count: <int>tier?.quota_limits?.developer_count
                 }
             };
         }
@@ -468,7 +474,8 @@ function getTierForOrgFromCache(string orgIdentifier) returns GetTierDetailRespo
                     service_quota: <int>(check tierJson.service_quota),
                     api_quota: <int>(check tierJson.api_quota),
                     remote_app_quota: <int>(check tierJson.remote_app_quota),
-                    step_quota: <int>(check tierJson.step_quota)
+                    step_quota: <int>(check tierJson.step_quota),
+                    developer_count: <int>(check tierJson.developer_count)
                 }
             };
             return getTierDetailResponse;
@@ -497,7 +504,8 @@ function getTierForOrgIdFromDB(string orgId) returns GetTierDetailResponse|error
                 integration_quota: <int>tier?.quota_limits?.integration_quota,
                 api_quota: <int>tier?.quota_limits?.api_quota,
                 remote_app_quota: <int>tier?.quota_limits?.remote_app_quota,
-                step_quota: <int>tier?.quota_limits?.step_quota
+                step_quota: <int>tier?.quota_limits?.step_quota,
+                developer_count: <int>tier?.quota_limits?.developer_count
             };
             string|error entry = cache:setEntry(orgId, tierDTO.toString());
             GetTierDetailResponse getTierDetailResponse = {tier: tierDTO};
@@ -526,7 +534,8 @@ function getTierForOrgHandleFromDB(string orgHandle) returns GetTierDetailRespon
                 integration_quota: <int>tier?.quota_limits?.integration_quota,
                 api_quota: <int>tier?.quota_limits?.api_quota,
                 remote_app_quota: <int>tier?.quota_limits?.remote_app_quota,
-                step_quota: <int>tier?.quota_limits?.step_quota
+                step_quota: <int>tier?.quota_limits?.step_quota,
+                developer_count: <int>tier?.quota_limits?.developer_count
             };
             string|error entry = cache:setEntry(orgHandle, tierDTO.toString());
             GetTierDetailResponse getTierDetailResponse = {tier: tierDTO};

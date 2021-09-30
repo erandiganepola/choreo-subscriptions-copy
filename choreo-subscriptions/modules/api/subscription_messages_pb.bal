@@ -38,6 +38,7 @@ public type Tier record {|
     int api_quota = 0;
     int remote_app_quota = 0;
     int step_quota = 0;
+    int developer_count = 0;
 |};
 
 public type Attribute record {|

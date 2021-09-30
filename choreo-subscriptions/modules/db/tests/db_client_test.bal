@@ -13,7 +13,8 @@ TierQuotas mockTierQuotas = {
     service_quota: 10,
     api_quota: 20,
     remote_app_quota: 10,
-    step_quota: 1000
+    step_quota: 1000,
+    developer_count: 1
 };
 
 Tier mockTier = {
@@ -196,7 +197,8 @@ class TierQuotasStreamImplementor {
         {attribute_name: "integration_quota", threshold: 15}, 
         {attribute_name: "api_quota", threshold: 20}, 
         {attribute_name: "remote_app_quota", threshold: 10}, 
-        {attribute_name: "step_quota", threshold: 1000}
+        {attribute_name: "step_quota", threshold: 1000}, 
+        {attribute_name: "developer_count", threshold: 1}
     ];
 
     isolated function init() {
@@ -257,6 +259,14 @@ class TierQuotaJoinStreamImplementor {
         created_at: 1627639797657,
         attribute_name: "step_quota",
         threshold: 1000
+    }, {
+        id: "0ccca02-643a43ae-a38-200f2b",
+        name: "Free Tier",
+        description: "Free allocation to tryout choreo",
+        cost: 0,
+        created_at: 1627639797657,
+        attribute_name: "developer_count",
+        threshold: 1
     }];
 
     isolated function init() {

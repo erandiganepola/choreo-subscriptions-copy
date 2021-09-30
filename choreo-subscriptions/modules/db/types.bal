@@ -21,6 +21,7 @@ public type TierQuotas record {|
     int api_quota = 30;
     int remote_app_quota = 10;
     int step_quota = 0;
+    int developer_count = 0;
 |};
 
 public type TierDAO record {|
