@@ -22,15 +22,12 @@ public isolated function getTimestampInMillis() returns int {
 # + return - returns the env variable or default value if not set
 public function readFromEnvVar(string envKey, string defaultVal) returns string {
     string envVarStr = os:getEnv(envKey);
-    log:printDebug("Read environment variable", (), {"key": envKey, "value": envVarStr});
+    log:printDebug("Read environment variable", key = envKey, value = envVarStr);
     if envVarStr != "" {
         return envVarStr;
     }
-    log:printDebug("Get default value instead of environment variable", (), {
-        "key": envKey,
-        "value": envVarStr,
-        "default_value": defaultVal
-    });
+    log:printDebug("Get default value instead of environment variable", key = envKey, value = envVarStr,
+        default_value = defaultVal);
     return defaultVal;
 }
 
@@ -41,24 +38,17 @@ public function readFromEnvVar(string envKey, string defaultVal) returns string 
 # + return - returns the env variable or default value if not set
 public function readIntFromEnvVar(string envKey, int defaultVal) returns int {
     string envVarStr = os:getEnv(envKey);
-    log:printDebug("Read environment variable", (), {"key": envKey, "value": envVarStr});
+    log:printDebug("Read environment variable", key = envKey, value = envVarStr);
     if envVarStr != "" {
         int|error envVarInt = int:fromString(envVarStr);
         if envVarInt is int {
             return envVarInt;
         } else {
-            log:printError("Invalid value for environment variable.", envVarInt, {
-                "key": envKey,
-                "value": envVarStr
-            });
+            log:printError("Invalid value for environment variable.", envVarInt, key = envKey, value = envVarStr);
             panic envVarInt;
         }
     }
-    log:printDebug("Get default value instead of environment variable", (), {
-        "key": envKey,
-        "value": envVarStr,
-        "default_value": defaultVal
-    });
+    log:printDebug("Get default value instead of environment variable", key = envKey, value = envVarStr, default_value = defaultVal);
     return defaultVal;
 }
 
@@ -69,24 +59,18 @@ public function readIntFromEnvVar(string envKey, int defaultVal) returns int {
 # + return - returns the env variable or default value if not set
 public function readDecimalFromEnvVar(string envKey, decimal defaultVal) returns decimal {
     string envVarStr = os:getEnv(envKey);
-    log:printDebug("Read environment variable", (), {"key": envKey, "value": envVarStr});
+    log:printDebug("Read environment variable", key = envKey, value = envVarStr);
     if envVarStr != "" {
         decimal|error envVarDecimal = decimal:fromString(envVarStr);
         if envVarDecimal is decimal {
             return envVarDecimal;
         } else {
-            log:printError("Invalid value for environment variable", envVarDecimal, {
-                "key": envKey,
-                "value": envVarStr
-            });
+            log:printError("Invalid value for environment variable", envVarDecimal, key = envKey, value = envVarStr);
             panic envVarDecimal;
         }
     }
-    log:printDebug("Get default value instead of environment variable", (), {
-        "key": envKey,
-        "value": envVarStr,
-        "default_value": defaultVal
-    });
+    log:printDebug("Get default value instead of environment variable", key = envKey, value = envVarStr,
+        default_value = defaultVal);
     return defaultVal;
 }
 
@@ -97,24 +81,18 @@ public function readDecimalFromEnvVar(string envKey, decimal defaultVal) returns
 # + return - returns the env variable or default value if not set
 public function readBooleanFromEnvVar(string envKey, boolean defaultVal) returns boolean {
     string envVarStr = os:getEnv(envKey);
-    log:printDebug("Read environment variable", (), {"key": envKey, "value": envVarStr});
+    log:printDebug("Read environment variable", key = envKey, value = envVarStr);
     if envVarStr != "" {
         boolean|error envVarBoolean = boolean:fromString(envVarStr);
         if envVarBoolean is boolean {
             return envVarBoolean;
         } else {
-            log:printError("Invalid value for environment variable.", envVarBoolean, {
-                "key": envKey,
-                "value": envVarStr
-            });
+            log:printError("Invalid value for environment variable.", envVarBoolean, key = envKey, value = envVarStr);
             panic envVarBoolean;
         }
     }
-    log:printDebug("Get default value instead of environment variable", (), {
-        "key": envKey,
-        "value": envVarStr,
-        "default_value": defaultVal
-    });
+    log:printDebug("Get default value instead of environment variable", key = envKey, value = envVarStr,
+        default_value = defaultVal);
     return defaultVal;
 }
 

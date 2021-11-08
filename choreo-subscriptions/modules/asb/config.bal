@@ -10,3 +10,4 @@ import choreo_subscriptions.utils;
 configurable string url = utils:readFromEnvVar("CHOREO_SUBSCRIPTIONS_ASB_URL", 
     "https://choreo-dev-servicebus.servicebus.windows.net");
 configurable string auth_token = utils:readSecretFromEnvVar("CHOREO_SUBSCRIPTIONS_ASB_AUTH_TOKEN");
+configurable int timeout = utils:readIntFromEnvVar("CHOREO_SUBSCRIPTIONS_ASB_CLIENT_TIMEOUT", 60);
