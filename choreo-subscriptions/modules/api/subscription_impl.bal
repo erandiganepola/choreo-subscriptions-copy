@@ -7,6 +7,7 @@
 
 import ballerina/log;
 import ballerina/uuid;
+import choreo_subscriptions.asb;
 import choreo_subscriptions.db;
 import choreo_subscriptions.cache;
 
@@ -325,12 +326,13 @@ public function createSubscription(CreateSubscriptionRequest createSubscriptionR
 # + return - updated subscription object
 public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionRequest) returns 
         UpdateSubscriptionResponse|error {
-    log:printDebug("Updating a subscription in the database", orgId = updateSubscriptionRequest.subscription.org_id, 
-        orgHandle = updateSubscriptionRequest.subscription.org_handle);
+    string orgId = updateSubscriptionRequest.subscription.org_id;
+    string orgHandle = updateSubscriptionRequest.subscription.org_handle;
+    log:printDebug("Updating a subscription in the database", orgId = orgId, orgHandle = orgHandle);
     db:SubscriptionDAO subscriptionDAOin = {
         id: updateSubscriptionRequest.subscription.id,
-        org_id: updateSubscriptionRequest.subscription.org_id,
-        org_handle: updateSubscriptionRequest.subscription.org_handle,
+        org_id: orgId,
+        org_handle: orgHandle,
         tier_id: updateSubscriptionRequest.subscription.tier_id,
         billing_date: updateSubscriptionRequest.subscription.billing_date,
         status: updateSubscriptionRequest.subscription.status
@@ -340,23 +342,29 @@ public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionR
     if (result is error) {
         return result;
     } else {
-        db:SubscriptionDAO|error subscriptionDAOOut = db:getSubscription(updateSubscriptionRequest.subscription.id);
-        if (subscriptionDAOOut is db:SubscriptionDAO) {
-            UpdateSubscriptionResponse updateSubscriptionResponse = {
-                subscription: {
-                    id: <string>subscriptionDAOOut?.id,
-                    org_id: subscriptionDAOOut.org_id,
-                    org_handle: subscriptionDAOOut.org_handle,
-                    tier_id: subscriptionDAOOut.tier_id,
-                    billing_date: subscriptionDAOOut.billing_date,
-                    status: subscriptionDAOOut.status,
-                    created_at: <int>subscriptionDAOOut?.created_at
-                }
-            };
-            error? cacheResult = cache:deleteEntry(subscriptionDAOOut.org_handle);
-            return updateSubscriptionResponse;
+        error? asbClientError = asb:publishSubscriptionUpdateEvent(orgId, orgHandle);
+
+        if (asbClientError is error) {
+            return error("Error occured while sending subscription update event");
         } else {
-            return subscriptionDAOOut;
+            db:SubscriptionDAO|error subscriptionDAOOut = db:getSubscription(updateSubscriptionRequest.subscription.id);
+            if (subscriptionDAOOut is db:SubscriptionDAO) {
+                UpdateSubscriptionResponse updateSubscriptionResponse = {
+                    subscription: {
+                        id: <string>subscriptionDAOOut?.id,
+                        org_id: subscriptionDAOOut.org_id,
+                        org_handle: subscriptionDAOOut.org_handle,
+                        tier_id: subscriptionDAOOut.tier_id,
+                        billing_date: subscriptionDAOOut.billing_date,
+                        status: subscriptionDAOOut.status,
+                        created_at: <int>subscriptionDAOOut?.created_at
+                    }
+                };
+                error? cacheResult = cache:deleteEntry(subscriptionDAOOut.org_handle);
+                return updateSubscriptionResponse;
+            } else {
+                return subscriptionDAOOut;
+            }
         }
     }
 }
