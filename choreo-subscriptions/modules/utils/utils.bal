@@ -26,7 +26,7 @@ public function readFromEnvVar(string envKey, string defaultVal) returns string 
     if envVarStr != "" {
         return envVarStr;
     }
-    log:printDebug("Get default value instead of environment variable", key = envKey, value = envVarStr,
+    log:printDebug("Get default value instead of environment variable", key = envKey, value = envVarStr, 
         default_value = defaultVal);
     return defaultVal;
 }
@@ -69,7 +69,7 @@ public function readDecimalFromEnvVar(string envKey, decimal defaultVal) returns
             panic envVarDecimal;
         }
     }
-    log:printDebug("Get default value instead of environment variable", key = envKey, value = envVarStr,
+    log:printDebug("Get default value instead of environment variable", key = envKey, value = envVarStr, 
         default_value = defaultVal);
     return defaultVal;
 }
@@ -91,7 +91,7 @@ public function readBooleanFromEnvVar(string envKey, boolean defaultVal) returns
             panic envVarBoolean;
         }
     }
-    log:printDebug("Get default value instead of environment variable", key = envKey, value = envVarStr,
+    log:printDebug("Get default value instead of environment variable", key = envKey, value = envVarStr, 
         default_value = defaultVal);
     return defaultVal;
 }
