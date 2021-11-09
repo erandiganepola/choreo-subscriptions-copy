@@ -16,3 +16,7 @@ isClusterConnection = false
 startTls = false
 verifyPeer = false
 database = 0
+
+[choreo.choreo_subscriptions.asb]
+url = "https://choreo-dev-servicebus.servicebus.windows.net"
+timeout = 60
