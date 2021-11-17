@@ -61,11 +61,11 @@ public function getThresholdEventStatusForOrgId(string orgId, int month) returns
         log:printDebug("Successfully retrieved threshold event status for org handle from the database", 
             orgId = orgId);
         return {
-            org_uuid: <string> (result.value["org_uuid"]),
-            billing_month: <int> (result.value["billing_month"]),
-            threshold_1_event_sent: (<boolean> result.value["threshold_1_event_sent"]) ? 1 : 0,
-            threshold_2_event_sent: (<boolean> result.value["threshold_2_event_sent"]) ? 1 : 0,
-            billing_cycle_reset: (<boolean> result.value["billing_cycle_reset"]) ? 1 : 0
+            org_uuid: <string>(result.value["org_uuid"]),
+            billing_month: <int>(result.value["billing_month"]),
+            threshold_1_event_sent: (<boolean>result.value["threshold_1_event_sent"]) ? 1 : 0,
+            threshold_2_event_sent: (<boolean>result.value["threshold_2_event_sent"]) ? 1 : 0,
+            billing_cycle_reset: (<boolean>result.value["billing_cycle_reset"]) ? 1 : 0
         };
     }
 }

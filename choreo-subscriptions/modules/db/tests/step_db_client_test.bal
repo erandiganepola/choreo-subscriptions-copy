@@ -40,7 +40,7 @@ function returnMockedThresholdEventStatusDAOStream() returns stream<record {}, e
 
 class ThresholdEventStatusDAOStreamImplementor {
     private int index = 0;
-    private record {| record {} value; |}[] currentEntries = [{
+    private record {|record {} value;|}[] currentEntries = [{
         value: {
             "org_uuid": "496b70d7-2ab6-440-405-dde8f64",
             "billing_month": 11,
@@ -53,9 +53,9 @@ class ThresholdEventStatusDAOStreamImplementor {
     isolated function init() {
     }
 
-    public isolated function next() returns record {| record {} value; |}|error? {
+    public isolated function next() returns record {|record {} value;|}|error? {
         if (self.index < self.currentEntries.length()) {
-            record {| record {} value; |} eventRecord = {value: self.currentEntries[self.index].value};
+            record {|record {} value;|} eventRecord = {value: self.currentEntries[self.index].value};
             self.index += 1;
             return eventRecord;
         }

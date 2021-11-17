@@ -362,7 +362,7 @@ public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionR
                 log:printDebug("Skipped updating since threshold event is not yet sent", orgId = orgId);
             }
         } else if thresholdEventStatus is () {
-            log:printDebug("Not updating threshold event status as that is not available for this organization",
+            log:printDebug("Not updating threshold event status as that is not available for this organization", 
                 orgId = orgId);
         } else {
             log:printError("Error occured while updating the subscription", 'error = thresholdEventStatus);
