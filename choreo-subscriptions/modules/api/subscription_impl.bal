@@ -358,6 +358,8 @@ public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionR
                     log:printError("Error occured while updating the subscription");
                     return error("Error occured while updating the subscription");
                 }
+            } else {
+                log:printDebug("Skipped updating since threshold event is not yet sent", orgId = orgId);
             }
         } else if thresholdEventStatus is () {
             log:printDebug("Not updating threshold event status as that is not available for this organization",
