@@ -76,6 +76,13 @@ function getMockClient() returns jdbc:Client|error {
     return test:mock(jdbc:Client);
 }
 
+@test:Mock {
+    functionName: "getStepDbClient"
+}
+function getMockStepDbClient() returns jdbc:Client|error {
+    return test:mock(jdbc:Client);
+}
+
 @test:Config {
     groups: ["db"]
 }

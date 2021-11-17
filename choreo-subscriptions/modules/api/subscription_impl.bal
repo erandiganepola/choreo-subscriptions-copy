@@ -10,6 +10,7 @@ import ballerina/uuid;
 import choreo_subscriptions.asb;
 import choreo_subscriptions.db;
 import choreo_subscriptions.cache;
+import choreo_subscriptions.utils;
 
 # Returns the subscribed tier object for the given organization uuid
 #
@@ -326,6 +327,7 @@ public function createSubscription(CreateSubscriptionRequest createSubscriptionR
 # + return - updated subscription object
 public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionRequest) returns 
         UpdateSubscriptionResponse|error {
+    // TODO : This method need to be updated to identify this is a subscription upgrade method
     string orgId = updateSubscriptionRequest.subscription.org_id;
     string orgHandle = updateSubscriptionRequest.subscription.org_handle;
     log:printDebug("Updating a subscription in the database", orgId = orgId, orgHandle = orgHandle);
@@ -342,6 +344,29 @@ public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionR
     if (result is error) {
         return result;
     } else {
+        int monthOfYear = utils:getMonthOfYear(billingDay);
+        db:ThresholdEventStatusDAO|()|error thresholdEventStatus = db:getThresholdEventStatusForOrgId(orgId, monthOfYear);
+        if (thresholdEventStatus is db:ThresholdEventStatusDAO) {
+            log:printDebug("Threshold event status exists", eventStatus = thresholdEventStatus);
+            if (thresholdEventStatus.threshold_1_event_sent == 1 || thresholdEventStatus.threshold_2_event_sent == 1) {
+                log:printDebug("Updating the threshold event status since the events are already sent");
+                thresholdEventStatus.threshold_1_event_sent = 0;
+                thresholdEventStatus.threshold_2_event_sent = 0;
+                error? updateResult = db:updateThresholdEventStatus(thresholdEventStatus);
+
+                if (updateResult is error) {
+                    log:printError("Error occured while updating the subscription");
+                    return error("Error occured while updating the subscription");
+                }
+            }
+        } else if thresholdEventStatus is () {
+            log:printDebug("Not updating threshold event status as that is not available for this organization",
+                orgId = orgId);
+        } else {
+            log:printError("Error occured while updating the subscription", 'error = thresholdEventStatus);
+            return error("Error occured while updating the subscription");
+        }
+
         error? asbClientError = asb:publishSubscriptionUpdateEvent(orgId, orgHandle);
 
         if (asbClientError is error) {

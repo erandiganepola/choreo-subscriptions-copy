@@ -86,3 +86,11 @@ public type AttributeDAO record {|
     string description;
     int created_at?;
 |};
+
+public type ThresholdEventStatusDAO record {|
+    string org_uuid;
+    int billing_month;
+    int threshold_1_event_sent;
+    int threshold_2_event_sent;
+    int billing_cycle_reset;
+|};

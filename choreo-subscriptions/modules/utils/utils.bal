@@ -15,6 +15,22 @@ public isolated function getTimestampInMillis() returns int {
     return utcNow[0] * 1000 + <int>decimal:round(utcNow[1] * 1000d);
 }
 
+public function getMonthOfYear(int billingDay) returns int {
+    time:Utc utc = time:utcNow();
+    time:Civil civil = time:utcToCivil(utc);
+    int monthCount = civil.month;
+    int dayOfMonth = civil.day;
+    int monthOfYear = monthCount;
+    if (dayOfMonth >= billingDay) {
+        if (monthCount == 12) {
+            monthOfYear = 1;
+        } else {
+            monthOfYear = monthCount + 1;
+        }
+    }
+    return monthOfYear;
+}
+
 # Returns an env variable from the given key
 #
 # + envKey - the key for the env variable
