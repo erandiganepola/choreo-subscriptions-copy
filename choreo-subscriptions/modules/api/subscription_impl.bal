@@ -11,6 +11,14 @@ import choreo_subscriptions.asb;
 import choreo_subscriptions.db;
 import choreo_subscriptions.cache;
 
+# Returns the list of available tiers
+#
+# + return - Tier list with count  
+public function getTiers() returns GetTiersResponse|error {
+    log:printDebug("Getting list of tiers");
+    return getTiersFromDB();
+}
+
 # Returns the subscribed tier object for the given organization uuid
 #
 # + orgId - uuid of the interested organization
@@ -523,6 +531,39 @@ function getTierForOrgIdFromDB(string orgId) returns GetTierDetailResponse|error
         }
     } else {
         return subscriptionDAO;
+    }
+}
+
+function getTiersFromDB() returns GetTiersResponse|error {
+    //get tiers from database
+    Tier[] apiTiers = [];
+    int tierCount = 0;
+    db:Tier[]|error tiers = db:getTiers();
+    if (tiers is db:Tier[]) {
+        foreach db:Tier tier in tiers {
+            Tier tierDTO = {
+                id: <string>tier?.id,
+                name: tier.name,
+                description: tier.description,
+                cost: tier.cost,
+                created_at: <int>tier?.created_at,
+                service_quota: <int>tier?.quota_limits?.service_quota,
+                integration_quota: <int>tier?.quota_limits?.integration_quota,
+                api_quota: <int>tier?.quota_limits?.api_quota,
+                remote_app_quota: <int>tier?.quota_limits?.remote_app_quota,
+                step_quota: <int>tier?.quota_limits?.step_quota,
+                developer_count: <int>tier?.quota_limits?.developer_count
+            };
+            apiTiers[tierCount] = tierDTO;
+            tierCount += 1;
+        }
+        GetTiersResponse getTiersResponse = {
+            count: tierCount,
+            list: apiTiers
+        };
+        return getTiersResponse;
+    } else {
+        return tiers;
     }
 }
 

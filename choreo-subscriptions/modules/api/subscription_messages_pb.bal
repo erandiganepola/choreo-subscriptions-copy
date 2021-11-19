@@ -61,6 +61,9 @@ public type CreateSubscriptionRequest record {|
     Subscription subscription = {};
 |};
 
+public type GetTiersRequest record {|
+|};
+
 public type GetTierDetailRequest record {|
     string org_identifier = "";
 |};
@@ -99,6 +102,12 @@ public type Subscription record {|
     int billing_date = 0;
     string status = "";
     int created_at = 0;
+|};
+
+# This is a list ot Tiers
+public type GetTiersResponse record {|
+    int count = 0;
+    Tier[] list = [];
 |};
 
 public type GetTierDetailResponse record {|
