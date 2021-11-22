@@ -16,7 +16,7 @@ WORKDIR /src
 
 RUN bal build --skip-tests choreo-subscriptions
 
-FROM adoptopenjdk/openjdk11:jre-11.0.10_9-alpine
+FROM adoptopenjdk/openjdk11:jre-11.0.13_8-alpine
 WORKDIR /home/ballerina
 
 LABEL maintainer="dev@ballerina.io"
