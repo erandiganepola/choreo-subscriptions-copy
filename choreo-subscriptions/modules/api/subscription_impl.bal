@@ -9,6 +9,7 @@ import ballerina/log;
 import ballerina/uuid;
 import choreo_subscriptions.asb;
 import choreo_subscriptions.db;
+import choreo_subscriptions.config;
 import choreo_subscriptions.cache;
 
 # Returns the list of available tiers
@@ -16,6 +17,10 @@ import choreo_subscriptions.cache;
 # + return - Tier list with count  
 public function getTiers() returns GetTiersResponse|error {
     log:printDebug("Getting list of tiers");
+    GetTiersResponse|error getTiersResponse = getTiersFromCache();
+    if (getTiersResponse is GetTiersResponse) {
+        return getTiersResponse;
+    }
     return getTiersFromDB();
 }
 
@@ -534,6 +539,47 @@ function getTierForOrgIdFromDB(string orgId) returns GetTierDetailResponse|error
     }
 }
 
+function getTiersFromCache() returns GetTiersResponse|error {
+    // get tiers from cache
+    Tier[] apiTiers = [];
+    int tierCount = 0;
+    (string|error)? tiersString = cache:getEntry(config:TIER_LIST_CACHE_KEY);
+    if (tiersString is string) {
+        json|error tiersJson = tiersString.fromJsonString();
+        if (tiersJson is json) {
+            json[] tierList = <json[]>check tiersJson.list;
+            foreach var tier in tierList {
+                Tier tierDTO = {
+                    id: (check tier?.id).toString(),
+                    name: (check tier?.name).toString(),
+                    description: (check tier?.description).toString(),
+                    cost: <int>(check tier?.cost),
+                    created_at: <int>(check tier?.created_at),
+                    service_quota: <int>(check tier?.service_quota),
+                    integration_quota: <int>(check tier?.integration_quota),
+                    api_quota: <int>(check tier?.api_quota),
+                    remote_app_quota: <int>(check tier?.remote_app_quota),
+                    step_quota: <int>(check tier?.step_quota),
+                    developer_count: <int>(check tier?.developer_count)
+                };
+                apiTiers[tierCount] = tierDTO;
+                tierCount += 1;
+            }
+            GetTiersResponse getTiersResponse = {
+                count: tierCount,
+                list: apiTiers
+            };
+            log:printDebug("Received tiers from cache.");
+            return getTiersResponse;
+        } else {
+            log:printError("Error while parsing cached value to tier list object.", cache = tiersString, 'error = tiersJson);
+            return tiersJson;
+        }
+    } else {
+        return error("Tier list not available in the cache.");
+    }
+}
+
 function getTiersFromDB() returns GetTiersResponse|error {
     //get tiers from database
     Tier[] apiTiers = [];
@@ -561,6 +607,8 @@ function getTiersFromDB() returns GetTiersResponse|error {
             count: tierCount,
             list: apiTiers
         };
+        string|error entry = cache:setEntry(config:TIER_LIST_CACHE_KEY, getTiersResponse.toString());
+        log:printDebug("Received tiers from database.");
         return getTiersResponse;
     } else {
         return tiers;
