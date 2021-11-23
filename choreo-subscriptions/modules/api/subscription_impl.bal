@@ -14,14 +14,15 @@ import choreo_subscriptions.cache;
 
 # Returns the list of available tiers
 #
+# + internal - Internal tiers flag
 # + return - Tier list with count  
-public function getTiers() returns GetTiersResponse|error {
+public function getTiers(boolean internal) returns GetTiersResponse|error {
     log:printDebug("Getting list of tiers");
-    GetTiersResponse|error getTiersResponse = getTiersFromCache();
+    GetTiersResponse|error getTiersResponse = getTiersFromCache(internal);
     if (getTiersResponse is GetTiersResponse) {
         return getTiersResponse;
     }
-    return getTiersFromDB();
+    return getTiersFromDB(internal);
 }
 
 # Returns the subscribed tier object for the given organization uuid
@@ -539,11 +540,16 @@ function getTierForOrgIdFromDB(string orgId) returns GetTierDetailResponse|error
     }
 }
 
-function getTiersFromCache() returns GetTiersResponse|error {
+function getTiersFromCache(boolean internal) returns GetTiersResponse|error {
     // get tiers from cache
     Tier[] apiTiers = [];
     int tierCount = 0;
-    (string|error)? tiersString = cache:getEntry(config:TIER_LIST_CACHE_KEY);
+    (string|error)? tiersString;
+    if (internal) {
+        tiersString = cache:getEntry(config:INTERNAL_TIER_LIST_CACHE_KEY);
+    } else {
+        tiersString = cache:getEntry(config:NON_INTERNAL_TIER_LIST_CACHE_KEY);
+    }
     if (tiersString is string) {
         json|error tiersJson = tiersString.fromJsonString();
         if (tiersJson is json) {
@@ -580,11 +586,11 @@ function getTiersFromCache() returns GetTiersResponse|error {
     }
 }
 
-function getTiersFromDB() returns GetTiersResponse|error {
+function getTiersFromDB(boolean internal) returns GetTiersResponse|error {
     //get tiers from database
     Tier[] apiTiers = [];
     int tierCount = 0;
-    db:Tier[]|error tiers = db:getTiers();
+    db:Tier[]|error tiers = db:getTiers(internal);
     if (tiers is db:Tier[]) {
         foreach db:Tier tier in tiers {
             Tier tierDTO = {
@@ -607,8 +613,11 @@ function getTiersFromDB() returns GetTiersResponse|error {
             count: tierCount,
             list: apiTiers
         };
-        string|error entry = cache:setEntry(config:TIER_LIST_CACHE_KEY, getTiersResponse.toString());
-        log:printDebug("Received tiers from database.");
+        if (internal) {
+            string|error entry = cache:setEntry(config:INTERNAL_TIER_LIST_CACHE_KEY, getTiersResponse.toString());
+        } else {
+            string|error entry = cache:setEntry(config:NON_INTERNAL_TIER_LIST_CACHE_KEY, getTiersResponse.toString());
+        }
         return getTiersResponse;
     } else {
         return tiers;

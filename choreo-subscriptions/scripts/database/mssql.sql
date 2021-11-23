@@ -21,6 +21,7 @@ BEGIN
         description VARCHAR(1024) NOT NULL,
         cost INTEGER NOT NULL,
         created_at BIGINT DEFAULT DATEDIFF_BIG(MILLISECOND,'1970-01-01 00:00:00.000', SYSUTCDATETIME()),
+        is_internal BIT NOT NULL,
         PRIMARY KEY (ID)
     );
 END

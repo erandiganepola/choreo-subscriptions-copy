@@ -62,6 +62,7 @@ public type CreateSubscriptionRequest record {|
 |};
 
 public type GetTiersRequest record {|
+    boolean internal = false;
 |};
 
 public type GetTierDetailRequest record {|
@@ -104,7 +105,6 @@ public type Subscription record {|
     int created_at = 0;
 |};
 
-# This is a list ot Tiers
 public type GetTiersResponse record {|
     int count = 0;
     Tier[] list = [];
