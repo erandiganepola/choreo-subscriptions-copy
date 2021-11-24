@@ -60,5 +60,3 @@ public configurable RedisClient redisClient = {
 };
 
 public configurable string REMOTE_APP_QUOTA = "remote_app_quota";
-public configurable string NON_INTERNAL_TIER_LIST_CACHE_KEY = "non-internal-tier-list";
-public configurable string INTERNAL_TIER_LIST_CACHE_KEY = "internal-tier-list";

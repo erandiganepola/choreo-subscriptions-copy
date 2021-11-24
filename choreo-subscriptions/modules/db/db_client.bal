@@ -302,7 +302,7 @@ public function getTiers(boolean internal) returns Tier[]|error {
     int quotaFieldCount = 0;
     sql:ParameterizedQuery tiersQuery;
 
-    log:printDebug("Getting tiers from the database.");
+    log:printDebug("Getting tiers from the database.", is_internal = internal);
     if (internal) {
         tiersQuery = `SELECT tier.id, tier.name, tier.description, tier.cost, tier.created_at,
         quota.attribute_name, quota.threshold FROM tier INNER JOIN quota ON tier.id = quota.tier_id WHERE
