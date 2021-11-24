@@ -383,6 +383,7 @@ public function getTierQuotas(string tierId) returns TierQuotas|error {
     }
 }
 
+# TODO: Modify the method to support adding is_internal flag (currently default)
 # Adds a tier to the database
 #
 # + tier - The tier object needs to be added
