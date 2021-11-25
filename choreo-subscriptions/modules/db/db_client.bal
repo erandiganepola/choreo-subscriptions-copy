@@ -289,6 +289,71 @@ public function getTier(string tierId) returns Tier|error {
     }
 }
 
+# Retrieves the list of tiers from the database
+#
+# + internal - Internal tiers flag
+# + return - The list of all the Tier objects  
+public function getTiers(boolean internal) returns Tier[]|error {
+    Tier[] tiers = [];
+    Tier tier = {};
+    TierQuotas tierQuotas = {};
+    string prevTierId = "";
+    int uniqueRecordCount = 0;
+    int quotaFieldCount = 0;
+    sql:ParameterizedQuery tiersQuery;
+
+    log:printDebug("Getting tiers from the database.", is_internal = internal);
+    if (internal) {
+        tiersQuery = `SELECT tier.id, tier.name, tier.description, tier.cost, tier.created_at,
+        quota.attribute_name, quota.threshold FROM tier INNER JOIN quota ON tier.id = quota.tier_id WHERE
+        tier.is_internal=1 ORDER BY cost`;
+    } else {
+        tiersQuery = `SELECT tier.id, tier.name, tier.description, tier.cost, tier.created_at,
+        quota.attribute_name, quota.threshold FROM tier INNER JOIN quota ON tier.id = quota.tier_id WHERE
+        tier.is_internal=0 ORDER BY cost`;
+    }
+
+    stream<record {}, error> tierResult = dbClient->query(tiersQuery, TierQuotaJoin);
+    stream<TierQuotaJoin, sql:Error> tierStream = <stream<TierQuotaJoin, sql:Error>>tierResult;
+
+    error? loopError = tierStream.forEach(function(TierQuotaJoin tierQuotaJoin) {
+        if (tierQuotaJoin.id != prevTierId) {
+            tier = {
+                id: tierQuotaJoin.id,
+                name: tierQuotaJoin.name,
+                description: tierQuotaJoin.description,
+                cost: tierQuotaJoin.cost,
+                created_at: tierQuotaJoin.created_at
+            };
+            prevTierId = tierQuotaJoin.id;
+        }
+        if (tierQuotaJoin.attribute_name != config:REMOTE_APP_QUOTA) {
+            tierQuotas[tierQuotaJoin.attribute_name] = tierQuotaJoin.threshold;
+            quotaFieldCount += 1;
+            if (quotaFieldCount == 5) {
+                tier.quota_limits = tierQuotas;
+                tiers[uniqueRecordCount] = tier;
+                tierQuotas = {};
+                uniqueRecordCount += 1;
+                quotaFieldCount = 0;
+            }
+        }
+    });
+
+    error? closeErr = tierStream.close();
+    if (closeErr is error) {
+        log:printWarn("Error occured while closing database connection.", 'error = closeErr);
+    }
+
+    if (loopError is error) {
+        log:printError("Error occured while retrieving tiers from the database.", 'error = loopError);
+        return error("Error while getting tier resource quotas from the database.");
+    } else {
+        log:printDebug("Successfully retrieved tiers from the database.");
+        return tiers;
+    }
+}
+
 # Retrieves the limites attribute set and threshold from the database
 #
 # + tierId - The id of the interested tier
@@ -318,6 +383,7 @@ public function getTierQuotas(string tierId) returns TierQuotas|error {
     }
 }
 
+# TODO: Modify the method to support adding is_internal flag (currently default)
 # Adds a tier to the database
 #
 # + tier - The tier object needs to be added

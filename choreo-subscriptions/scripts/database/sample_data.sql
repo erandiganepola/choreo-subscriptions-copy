@@ -7,12 +7,12 @@ INSERT INTO choreo_subscriptions_db.dbo.[attribute] (id,name,description,created
 	 (N'01ec1c6d-956e-175a-ad64-0f27c561adb8',N'developer_count',N'Number of developers can be allocated',1627639797657);
 GO
 
-INSERT INTO choreo_subscriptions_db.dbo.tier (id,name,description,cost,created_at) VALUES
-	 (N'01ebea3a-7735-10be-b3c0-ba95f991e877',N'Free Tier',N'Free tier to tryout choreo',0,1627639797657),
-	 (N'01ebea43-be76-1d7a-b410-2d1b873c57af',N'Enterprise Tier',N'Tier for enterprise users',100000,1627639797657),
-	 (N'01ec1f8e-7ba6-1f88-bd74-41709200d0c0',N'Individual Tier',N'Tier for Individual users',50,1627639797657),
-	 (N'01ec1d1e-0e9c-16e4-b6c9-1904e9ef9567',N'Team Tier',N'Tier for team users',395,1627639797657),
-	 (N'01ec1f82-5451-1cfa-83ca-222452b503ab',N'Group Tier',N'Tier for Group users',995,1627639797657);	 
+INSERT INTO choreo_subscriptions_db.dbo.tier (id,name,description,cost,created_at,is_internal) VALUES
+	 (N'01ebea3a-7735-10be-b3c0-ba95f991e877',N'Free Tier',N'Free tier to tryout choreo',0,1627639797657,0),
+	 (N'01ebea43-be76-1d7a-b410-2d1b873c57af',N'Enterprise Tier',N'Tier for enterprise users',100000,1627639797657,1),
+	 (N'01ec1f8e-7ba6-1f88-bd74-41709200d0c0',N'Individual Tier',N'Tier for Individual users',50,1627639797657,0),
+	 (N'01ec1d1e-0e9c-16e4-b6c9-1904e9ef9567',N'Team Tier',N'Tier for team users',395,1627639797657,0),
+	 (N'01ec1f82-5451-1cfa-83ca-222452b503ab',N'Group Tier',N'Tier for Group users',995,1627639797657,0);	 
 GO
 
 INSERT INTO choreo_subscriptions_db.dbo.quota (tier_id,attribute_name,threshold) VALUES

@@ -58,3 +58,5 @@ public configurable RedisClient redisClient = {
     verifyPeer: false,
     database: 0
 };
+
+public configurable string REMOTE_APP_QUOTA = "remote_app_quota";

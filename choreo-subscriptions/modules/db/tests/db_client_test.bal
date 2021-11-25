@@ -26,6 +26,44 @@ Tier mockTier = {
     quota_limits: mockTierQuotas
 };
 
+TierQuotas[] mockTierQuotasArray = [
+    {
+    integration_quota: 15,
+    service_quota: 10,
+    api_quota: 20,
+    remote_app_quota: 10,
+    step_quota: 1000,
+    developer_count: 1
+}, 
+    {
+    integration_quota: 30,
+    service_quota: 20,
+    api_quota: 40,
+    remote_app_quota: 10,
+    step_quota: 10000,
+    developer_count: 1
+}
+];
+
+Tier[] mockTierArray = [
+    {
+    id: "0ccca02-643a43ae-a38-200f2b",
+    name: "Free Tier",
+    description: "Free allocation to tryout choreo",
+    cost: 0,
+    created_at: 1627639797657,
+    quota_limits: mockTierQuotasArray[0]
+}, 
+    {
+    id: "01ec1f8e-7ba6-1f88-bd74-41709200d0c0",
+    name: "Individual",
+    description: "Individual tier plan",
+    cost: 50,
+    created_at: 1627639797657,
+    quota_limits: mockTierQuotasArray[1]
+}
+];
+
 SubscriptionDAO mockSubscriptionDAO = {
     id: "01ebe42f-9f13-1c18-9e38-cd24f0ebd234",
     org_id: "496b70d7-2ab6-440-405-dde8f64",
@@ -152,6 +190,17 @@ function testGetTier() {
 @test:Config {
     groups: ["db"]
 }
+function testGetTiers() {
+    boolean internal = false;
+    test:prepare(dbClient).when("query").thenReturn(returnMockedTiersQuotaJoinStream());
+    Tier[]|error result = getTiers(internal);
+
+    test:assertEquals(result, mockTierArray);
+}
+
+@test:Config {
+    groups: ["db"]
+}
 function testGetTierQuotas() {
     string tierId = "0000";
     test:prepare(dbClient).when("query").thenReturn(returnMockedTierQuotasStream());
@@ -167,6 +216,11 @@ function returnMockedTierQuotasStream() returns stream<QuotaRecord, error> {
 
 function returnMockedTierQuotaJoinStream() returns stream<TierQuotaJoin, error> {
     stream<TierQuotaJoin, error> tierQuotaJoinStream = new (new TierQuotaJoinStreamImplementor());
+    return tierQuotaJoinStream;
+}
+
+function returnMockedTiersQuotaJoinStream() returns stream<TierQuotaJoin, error> {
+    stream<TierQuotaJoin, error> tierQuotaJoinStream = new (new TiersQuotaJoinStreamImplementor());
     return tierQuotaJoinStream;
 }
 
@@ -264,6 +318,127 @@ class TierQuotaJoinStreamImplementor {
         name: "Free Tier",
         description: "Free allocation to tryout choreo",
         cost: 0,
+        created_at: 1627639797657,
+        attribute_name: "developer_count",
+        threshold: 1
+    }];
+
+    isolated function init() {
+    }
+
+    public isolated function next() returns record {|TierQuotaJoin value;|}|error? {
+        if (self.index < self.currentEntries.length()) {
+            record {|TierQuotaJoin value;|} tierQuotaJoin = {value: self.currentEntries[self.index]};
+            self.index += 1;
+            return tierQuotaJoin;
+        }
+    }
+}
+
+class TiersQuotaJoinStreamImplementor {
+    private int index = 0;
+    private TierQuotaJoin[] currentEntries = [{
+        id: "0ccca02-643a43ae-a38-200f2b",
+        name: "Free Tier",
+        description: "Free allocation to tryout choreo",
+        cost: 0,
+        created_at: 1627639797657,
+        attribute_name: "service_quota",
+        threshold: 10
+    }, 
+    {
+        id: "0ccca02-643a43ae-a38-200f2b",
+        name: "Free Tier",
+        description: "Free allocation to tryout choreo",
+        cost: 0,
+        created_at: 1627639797657,
+        attribute_name: "integration_quota",
+        threshold: 15
+    }, 
+    {
+        id: "0ccca02-643a43ae-a38-200f2b",
+        name: "Free Tier",
+        description: "Free allocation to tryout choreo",
+        cost: 0,
+        created_at: 1627639797657,
+        attribute_name: "api_quota",
+        threshold: 20
+    }, 
+    {
+        id: "0ccca02-643a43ae-a38-200f2b",
+        name: "Free Tier",
+        description: "Free allocation to tryout choreo",
+        cost: 0,
+        created_at: 1627639797657,
+        attribute_name: "remote_app_quota",
+        threshold: 10
+    }, 
+    {
+        id: "0ccca02-643a43ae-a38-200f2b",
+        name: "Free Tier",
+        description: "Free allocation to tryout choreo",
+        cost: 0,
+        created_at: 1627639797657,
+        attribute_name: "step_quota",
+        threshold: 1000
+    }, {
+        id: "0ccca02-643a43ae-a38-200f2b",
+        name: "Free Tier",
+        description: "Free allocation to tryout choreo",
+        cost: 0,
+        created_at: 1627639797657,
+        attribute_name: "developer_count",
+        threshold: 1
+    }, 
+    {
+        id: "01ec1f8e-7ba6-1f88-bd74-41709200d0c0",
+        name: "Individual",
+        description: "Individual tier plan",
+        cost: 50,
+        created_at: 1627639797657,
+        attribute_name: "service_quota",
+        threshold: 20
+    }, 
+    {
+        id: "01ec1f8e-7ba6-1f88-bd74-41709200d0c0",
+        name: "Individual",
+        description: "Individual tier plan",
+        cost: 50,
+        created_at: 1627639797657,
+        attribute_name: "integration_quota",
+        threshold: 30
+    }, 
+    {
+        id: "01ec1f8e-7ba6-1f88-bd74-41709200d0c0",
+        name: "Individual",
+        description: "Individual tier plan",
+        cost: 50,
+        created_at: 1627639797657,
+        attribute_name: "api_quota",
+        threshold: 40
+    }, 
+    {
+        id: "01ec1f8e-7ba6-1f88-bd74-41709200d0c0",
+        name: "Individual",
+        description: "Individual tier plan",
+        cost: 50,
+        created_at: 1627639797657,
+        attribute_name: "remote_app_quota",
+        threshold: 10
+    }, 
+    {
+        id: "01ec1f8e-7ba6-1f88-bd74-41709200d0c0",
+        name: "Individual",
+        description: "Individual tier plan",
+        cost: 50,
+        created_at: 1627639797657,
+        attribute_name: "step_quota",
+        threshold: 10000
+    }, {
+        id: "01ec1f8e-7ba6-1f88-bd74-41709200d0c0",
+        name: "Individual",
+        description: "Individual tier plan",
+        cost: 50,
         created_at: 1627639797657,
         attribute_name: "developer_count",
         threshold: 1
