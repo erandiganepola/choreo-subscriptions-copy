@@ -396,7 +396,8 @@ public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionR
                         created_at: <int>subscriptionDAOOut?.created_at
                     }
                 };
-                error? cacheResult = cache:deleteEntry(subscriptionDAOOut.org_handle);
+                error? cacheResultByOrgHandle = cache:deleteEntry(subscriptionDAOOut.org_handle);
+                error? cacheResultByOrgId = cache:deleteEntry(subscriptionDAOOut.org_id);
                 return updateSubscriptionResponse;
             } else {
                 return subscriptionDAOOut;
@@ -418,7 +419,8 @@ public function deleteSubscription(string subscriptionId) returns DeleteSubscrip
         if (result is error) {
             return result;
         } else {
-            error? cacheResult = cache:deleteEntry(subscriptionDAO.org_handle);
+            error? cacheResultByOrgHandle = cache:deleteEntry(subscriptionDAO.org_handle);
+            error? cacheResultByOrgId = cache:deleteEntry(subscriptionDAO.org_id);
             return {
                 identifier: subscriptionId
             };
@@ -441,7 +443,8 @@ public function deleteSubscriptionByOrgId(string orgId) returns DeleteSubscripti
         if (result is error) {
             return result;
         } else {
-            error? cacheResult = cache:deleteEntry(subscriptionDAO.org_handle);
+            error? cacheResultByOrgHandle = cache:deleteEntry(subscriptionDAO.org_handle);
+            error? cacheResultByOrgId = cache:deleteEntry(subscriptionDAO.org_id);
             return {
                 identifier: orgId
             };
