@@ -625,3 +625,17 @@ function getTierForOrgHandleFromDB(string orgHandle) returns GetTierDetailRespon
         return subscriptionDAO;
     }
 }
+
+public function getTotalStepCount(GetTotalStepCountRequest totalStepCountRequest) returns GetTotalStepCountResponse|error {
+    db:TotalStepCountDAO[]|error totalStepCount = db:getTotalStepCount(totalStepCountRequest.org_identifier, 
+        totalStepCountRequest.start_date, totalStepCountRequest.end_date);
+    if totalStepCount is db:TotalStepCountDAO[] {
+        TotalStepCount[] totalStepCountList = totalStepCount;
+        GetTotalStepCountResponse response = {
+            total_step_count: totalStepCountList
+        };
+        return response;
+    } else {
+        return totalStepCount;
+    }
+}

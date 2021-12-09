@@ -129,3 +129,18 @@ public type SubscriptionTierMappings record {|
 public type SubscriptionTierMappingRequest record {|
     string org_identifier = "";
 |};
+
+public type GetTotalStepCountRequest record {|
+    string org_identifier = "";
+    string start_date = "";
+    string end_date = "";
+|};
+
+public type GetTotalStepCountResponse record {|
+    TotalStepCount[] total_step_count = [];
+|};
+
+public type TotalStepCount record {|
+    string start_date = "";
+    int step_count = 0;
+|};
