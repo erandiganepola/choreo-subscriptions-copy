@@ -58,7 +58,7 @@ service "SubscriptionService" on ep {
     remote function CreateAttribute(api:CreateAttributeRequest value) returns api:CreateAttributeResponse|error {
         return api:createAttribute(value);
     }
-    remote function GetDailyTotalStepCount(api:GetTotalStepCountRequest value) returns api:GetTotalStepCountResponse|error {
-        return api:getTotalStepCount(value);
+    remote function GetDailyStepUsageForOrgId(api:GetTotalStepCountRequest value) returns api:GetTotalStepCountResponse|error {
+        return api:getDailyStepUsageForOrg(value);
     }
 }

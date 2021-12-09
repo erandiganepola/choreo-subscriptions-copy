@@ -626,8 +626,9 @@ function getTierForOrgHandleFromDB(string orgHandle) returns GetTierDetailRespon
     }
 }
 
-public function getTotalStepCount(GetTotalStepCountRequest totalStepCountRequest) returns GetTotalStepCountResponse|error {
-    db:TotalStepCountDAO[]|error totalStepCount = db:getTotalStepCount(totalStepCountRequest.org_identifier, 
+public function getDailyStepUsageForOrg(GetTotalStepCountRequest totalStepCountRequest) returns GetTotalStepCountResponse|error {
+    log:printDebug("Getting daily step usage details for the organization ", organizationId = totalStepCountRequest.org_identifier);
+    db:TotalStepCountDAO[]|error totalStepCount = db:getDailyTotalStepCountForOrg(totalStepCountRequest.org_identifier, 
         totalStepCountRequest.start_date, totalStepCountRequest.end_date);
     if totalStepCount is db:TotalStepCountDAO[] {
         TotalStepCount[] totalStepCountList = totalStepCount;
