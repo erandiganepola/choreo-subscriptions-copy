@@ -90,3 +90,40 @@ public function updateThresholdEventStatus(ThresholdEventStatusDAO thresholdEven
         log:printDebug("Successfully updated threshold event status in database.", eventStatus = thresholdEventStatus);
     }
 }
+
+# Gets total step count for a period
+#
+# + orgId - Organization Id  
+# + dayStart - From date of the defined time period  
+# + dayEnd - To date of the defined time period
+# + return - Return list of step counts per date 
+public function getDailyTotalStepCountForOrg(string orgId, string dayStart, string dayEnd) returns TotalStepCountDAO[]|error {
+    log:printDebug("Retriving total step count for the organization ", organizationId = orgId);
+    sql:ParameterizedQuery totalStepCountQuery = `SELECT day_start AS start_date,count AS step_count 
+        FROM daily_total_step_count WHERE org_uuid = ${orgId} AND day_start >= ${dayStart} AND day_start < ${dayEnd} ORDER BY day_start`;
+
+    stream<record {}, error> totalStepCountResult = stepDbClient->query(totalStepCountQuery, TotalStepCountDAO);
+    stream<TotalStepCountDAO, sql:Error> totalStepCountStream = <stream<TotalStepCountDAO, sql:Error>>totalStepCountResult;
+    TotalStepCountDAO[] totalStepCountList = [];
+    int count = 0;
+    error? loopError = totalStepCountStream.forEach(function(TotalStepCountDAO totalStepCountDAO) {
+        TotalStepCountDAO stepCountPerDay = {
+            start_date: totalStepCountDAO.start_date,
+            step_count: totalStepCountDAO.step_count
+        };
+        totalStepCountList[count] = stepCountPerDay;
+        count += 1;
+    });
+    error? closeErr = totalStepCountStream.close();
+    if (closeErr is error) {
+        log:printWarn("Error occured while closing database connection.", 'error = closeErr);
+    }
+    if (loopError is error) {
+        log:printError("Error occured while retrieving daily step count from the database.", 
+            'error = loopError);
+        return error("Error occured while retrieving daily step count from the database");
+    } else {
+        log:printDebug("Successfully retrieved daily step count from the database");
+        return totalStepCountList;
+    }
+}

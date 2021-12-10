@@ -94,3 +94,8 @@ public type ThresholdEventStatusDAO record {|
     int threshold_2_event_sent;
     int billing_cycle_reset;
 |};
+
+public type TotalStepCountDAO record {|
+    string start_date;
+    int step_count;
+|};

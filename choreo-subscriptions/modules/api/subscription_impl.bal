@@ -628,3 +628,18 @@ function getTierForOrgHandleFromDB(string orgHandle) returns GetTierDetailRespon
         return subscriptionDAO;
     }
 }
+
+public function getDailyStepUsageForOrg(GetTotalStepCountRequest totalStepCountRequest) returns GetTotalStepCountResponse|error {
+    log:printDebug("Getting daily step usage details for the organization ", organizationId = totalStepCountRequest.org_identifier);
+    db:TotalStepCountDAO[]|error totalStepCount = db:getDailyTotalStepCountForOrg(totalStepCountRequest.org_identifier, 
+        totalStepCountRequest.start_date, totalStepCountRequest.end_date);
+    if totalStepCount is db:TotalStepCountDAO[] {
+        TotalStepCount[] totalStepCountList = totalStepCount;
+        GetTotalStepCountResponse response = {
+            total_step_count: totalStepCountList
+        };
+        return response;
+    } else {
+        return totalStepCount;
+    }
+}

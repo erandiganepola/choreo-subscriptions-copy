@@ -16,6 +16,17 @@ ThresholdEventStatusDAO mockThresholdEventStatusDAO = {
     billing_cycle_reset: 1
 };
 
+TotalStepCountDAO[] mockTotalStepCountDAO = [
+    {
+    start_date: "2021-12-01T00:00:00.000",
+    step_count: 10
+}, 
+    {
+    start_date: "2021-12-02T00:00:00.000",
+    step_count: 15
+}
+];
+
 @test:Mock {
     functionName: "getStepDbClient"
 }
@@ -33,9 +44,25 @@ function testGetThresholdEventStatusForOrgId() {
     test:assertEquals(result, mockThresholdEventStatusDAO);
 }
 
+@test:Config {
+    groups: ["db"]
+}
+function testGetDailyTotalStepCountForOrg() {
+    test:prepare(stepDbClient).when("query").thenReturn(returnMockedTotalStepCountDAOStream());
+    TotalStepCountDAO[]|error result = getDailyTotalStepCountForOrg("e628f45c-d4fc-4d2a-9105-350b60beb84e", 
+        "2021-12-01T00:00:00.000", "2021-12-02T00:00:00.000");
+
+    test:assertEquals(result, mockTotalStepCountDAO);
+}
+
 function returnMockedThresholdEventStatusDAOStream() returns stream<record {}, error?> {
     stream<record {}, error?> thresholdEventStatusDAOStream = new (new ThresholdEventStatusDAOStreamImplementor());
     return thresholdEventStatusDAOStream;
+}
+
+function returnMockedTotalStepCountDAOStream() returns stream<record {}, error?> {
+    stream<TotalStepCountDAO, error> TotalStepCountStream = new (new TotalStepCountStreamImplementor());
+    return TotalStepCountStream;
 }
 
 class ThresholdEventStatusDAOStreamImplementor {
@@ -58,6 +85,29 @@ class ThresholdEventStatusDAOStreamImplementor {
             record {|record {} value;|} eventRecord = {value: self.currentEntries[self.index].value};
             self.index += 1;
             return eventRecord;
+        }
+    }
+}
+
+class TotalStepCountStreamImplementor {
+    private int index = 0;
+    private TotalStepCountDAO[] currentEntries = [{
+        start_date: "2021-12-01T00:00:00.000",
+        step_count: 10
+    }, 
+    {
+        start_date: "2021-12-02T00:00:00.000",
+        step_count: 15
+    }];
+
+    isolated function init() {
+    }
+
+    public isolated function next() returns record {|TotalStepCountDAO value;|}|error? {
+        if (self.index < self.currentEntries.length()) {
+            record {|TotalStepCountDAO value;|} totalStepCount = {value: self.currentEntries[self.index]};
+            self.index += 1;
+            return totalStepCount;
         }
     }
 }
