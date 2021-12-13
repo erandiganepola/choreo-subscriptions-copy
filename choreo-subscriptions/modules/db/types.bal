@@ -81,6 +81,11 @@ public type SubscriptionDAO record {|
     int created_at?;
 |};
 
+public type OrgIdSubItemIdMapping record {|
+    string org_id = "";
+    string subscription_item_id = "";
+|};
+
 public type AttributeDAO record {|
     string id?;
     string name;

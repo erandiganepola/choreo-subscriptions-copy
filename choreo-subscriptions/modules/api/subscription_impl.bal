@@ -188,6 +188,30 @@ public function getSubscriptionTierMappings(int offset, int 'limit) returns Subs
     }
 }
 
+public function getOrgIdSubItemIdMappings(int offset, int 'limit) returns GetOrgIdSubItemIdMappingsResponse|error {
+    int|error subscriptionCount = db:getPaidSubscriptionsCount();
+    if (subscriptionCount is int) {
+        db:OrgIdSubItemIdMapping[]|error orgIdSubItemIdMappings = db:getOrgIdSubItemIdMappings(offset, 'limit);
+        if (orgIdSubItemIdMappings is db:OrgIdSubItemIdMapping[]) {
+            GetOrgIdSubItemIdMappingsResponse orgIdSubItemIdMappingsResponse = {
+                org_sub_item_id_mappings: {
+                    org_sub_item_id_mappings: orgIdSubItemIdMappings
+                },
+                pagination: {
+                    offset: offset,
+                    'limit: 'limit,
+                    total: subscriptionCount
+                }
+            };
+            return orgIdSubItemIdMappingsResponse;
+        } else {
+            return orgIdSubItemIdMappings;
+        }
+    } else {
+        return subscriptionCount;
+    }
+}
+
 # Creates a new Tier and returns
 #
 # + createTierRequest - The tier object needs to be created
