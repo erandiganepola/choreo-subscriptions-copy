@@ -432,8 +432,8 @@ public function updateSubscription(SubscriptionDAO subscription) returns error? 
         orgHandle = subscription.org_handle);
     sql:ParameterizedQuery updateSubscriptionQuery = `UPDATE subscription SET org_id = ${subscription.org_id},
         org_handle = ${subscription.org_handle}, tier_id = ${subscription.tier_id},
-        billing_date = ${subscription.billing_date}, status = ${subscription.status}
-        WHERE id = ${subscription?.id}`;
+        billing_date = ${subscription.billing_date}, status = ${subscription.status},
+        stripe_subscription_item_id = ${subscription?.subscription_item_id} WHERE id = ${subscription?.id}`;
     sql:ExecutionResult|sql:Error result = dbClient->execute(updateSubscriptionQuery);
 
     if (result is sql:Error) {

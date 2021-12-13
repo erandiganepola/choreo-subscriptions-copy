@@ -345,6 +345,7 @@ public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionR
         org_id: orgId,
         org_handle: orgHandle,
         tier_id: updateSubscriptionRequest.subscription.tier_id,
+        subscription_item_id: updateSubscriptionRequest.subscription.subscription_item_id,
         billing_date: updateSubscriptionRequest.subscription.billing_date,
         status: updateSubscriptionRequest.subscription.status
     };

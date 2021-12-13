@@ -75,6 +75,7 @@ public type SubscriptionDAO record {|
     string org_id;
     string org_handle;
     string tier_id;
+    string subscription_item_id?;
     int billing_date;
     string status;
     int created_at?;
