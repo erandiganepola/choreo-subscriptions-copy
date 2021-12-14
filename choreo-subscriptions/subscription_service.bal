@@ -61,4 +61,7 @@ service "SubscriptionService" on ep {
     remote function GetDailyStepUsageForOrgId(api:GetTotalStepCountRequest value) returns api:GetTotalStepCountResponse|error {
         return api:getDailyStepUsageForOrg(value);
     }
+    remote function GetOrgIdSubItemIdMappings(api:GetOrgIdSubItemIdMappingsRequest value) returns api:GetOrgIdSubItemIdMappingsResponse|error {
+        return api:getOrgIdSubItemIdMappings(value.pagination.offset, value.pagination.'limit);
+    }
 }

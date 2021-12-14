@@ -188,6 +188,36 @@ public function getSubscriptionTierMappings(int offset, int 'limit) returns Subs
     }
 }
 
+# Returns a list of organization id subscription item id mappings with pagination
+#
+# + offset - The offset value where the pagination start from
+# + limit - Number of objects need to be returned
+# + return - List of org_id subscription_item_id mappings object, pagination params  
+public function getOrgIdSubItemIdMappings(int offset, int 'limit) returns GetOrgIdSubItemIdMappingsResponse|error {
+    log:printDebug("Getting organization id, subscription item id mappings", offset = offset, 'limit = 'limit);
+    int|error subscriptionCount = db:getPaidSubscriptionsCount();
+    if (subscriptionCount is int) {
+        db:OrgIdSubItemIdMapping[]|error orgIdSubItemIdMappings = db:getOrgIdSubItemIdMappings(offset, 'limit);
+        if (orgIdSubItemIdMappings is db:OrgIdSubItemIdMapping[]) {
+            GetOrgIdSubItemIdMappingsResponse orgIdSubItemIdMappingsResponse = {
+                org_sub_item_id_mappings: {
+                    org_sub_item_id_mappings: orgIdSubItemIdMappings
+                },
+                pagination: {
+                    offset: offset,
+                    'limit: 'limit,
+                    total: subscriptionCount
+                }
+            };
+            return orgIdSubItemIdMappingsResponse;
+        } else {
+            return orgIdSubItemIdMappings;
+        }
+    } else {
+        return subscriptionCount;
+    }
+}
+
 # Creates a new Tier and returns
 #
 # + createTierRequest - The tier object needs to be created
@@ -345,6 +375,7 @@ public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionR
         org_id: orgId,
         org_handle: orgHandle,
         tier_id: updateSubscriptionRequest.subscription.tier_id,
+        subscription_item_id: updateSubscriptionRequest.subscription.subscription_item_id,
         billing_date: updateSubscriptionRequest.subscription.billing_date,
         status: updateSubscriptionRequest.subscription.status
     };

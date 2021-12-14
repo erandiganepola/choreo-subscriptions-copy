@@ -103,6 +103,7 @@ public type Subscription record {|
     int billing_date = 0;
     string status = "";
     int created_at = 0;
+    string subscription_item_id = "";
 |};
 
 public type GetTiersResponse record {|
@@ -143,4 +144,22 @@ public type GetTotalStepCountResponse record {|
 public type TotalStepCount record {|
     string start_date = "";
     int step_count = 0;
+|};
+
+public type GetOrgIdSubItemIdMappingsRequest record {|
+    Pagination pagination = {};
+|};
+
+public type GetOrgIdSubItemIdMappingsResponse record {|
+    OrgIdSubItemIdMappings org_sub_item_id_mappings = {};
+    Pagination pagination = {};
+|};
+
+public type OrgIdSubItemIdMapping record {|
+    string org_id = "";
+    string subscription_item_id = "";
+|};
+
+public type OrgIdSubItemIdMappings record {|
+    OrgIdSubItemIdMapping[] org_sub_item_id_mappings = [];
 |};

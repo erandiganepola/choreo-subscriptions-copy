@@ -192,6 +192,29 @@ public function getSubscriptionsCount() returns int|error {
     }
 }
 
+# Retrieves the number of paid subscriptions available in the DB
+#
+# + return - Number of paid subscriptions available in the DB
+public function getPaidSubscriptionsCount() returns int|error {
+    log:printDebug("Getting the count of paid subscriptions from the database");
+    sql:ParameterizedQuery paidSubscriptionCountQuery = `SELECT COUNT(*) AS total FROM subscription WHERE
+    (stripe_subscription_item_id != 'canceled' AND stripe_subscription_item_id IS NOT NULL)`;
+    stream<record {}, error?> paidSubscriptionCountResult = dbClient->query(paidSubscriptionCountQuery);
+    record {|record {} value;|}|error? countResult = paidSubscriptionCountResult.next();
+
+    error? closeError = paidSubscriptionCountResult.close();
+    if (closeError is error) {
+        log:printWarn("Error while closing database connection", 'error = closeError);
+    }
+
+    if (countResult is record {|record {} value;|}) {
+        return <int>countResult.value["total"];
+    } else {
+        log:printError("Error occured while retrieving paid subscription count from the database", 'error = countResult);
+        return error("Error occured while retrieving paid subscription count from the database");
+    }
+}
+
 # Retrieves the subscription object with the given id from the database
 #
 # + subscriptionId - The id of the subscription interested in
@@ -215,6 +238,46 @@ public function getSubscription(string subscriptionId) returns SubscriptionDAO|e
     } else {
         log:printError("Error while retrieving subscription details", id = subscriptionId, 'error = subscription);
         return error("Error while retrieving subscription details from the database for id: " + subscriptionId);
+    }
+}
+
+# Retrieves organization and subscription item id mapping from DB
+#
+# + offset - The offset value from where the records to be retrieved
+# + limit - The number of records required
+# + return - Array of Org ID and Subscription Item ID mapping objects
+public function getOrgIdSubItemIdMappings(int offset, int 'limit) returns OrgIdSubItemIdMapping[]|error {
+    log:printDebug("Getting org_id subscription item id mappings from the database", offset = offset, 'limit = 'limit);
+    sql:ParameterizedQuery mappingsQuery = `SELECT org_id, stripe_subscription_item_id AS subscription_item_id FROM subscription WHERE
+        (stripe_subscription_item_id != 'canceled' AND stripe_subscription_item_id IS NOT NULL) ORDER BY org_id OFFSET ${offset} ROWS FETCH
+        NEXT ${'limit} ROWS ONLY`;
+
+    stream<record {}, error> mappingsResult = dbClient->query(mappingsQuery, OrgIdSubItemIdMapping);
+    stream<OrgIdSubItemIdMapping, sql:Error> mappingsStream = <stream<OrgIdSubItemIdMapping, sql:Error>>mappingsResult;
+
+    OrgIdSubItemIdMapping[] orgIdSubItemIdMappings = [];
+    int count = 0;
+    error? loopError = mappingsStream.forEach(function(OrgIdSubItemIdMapping orgIdSubItemIdDAO) {
+        OrgIdSubItemIdMapping orgIdSubItemIdMapping = {
+            org_id: orgIdSubItemIdDAO.org_id,
+            subscription_item_id: orgIdSubItemIdDAO.subscription_item_id
+        };
+        orgIdSubItemIdMappings[count] = orgIdSubItemIdMapping;
+        count += 1;
+    });
+
+    error? closeErr = mappingsStream.close();
+    if (closeErr is error) {
+        log:printWarn("Error occured while closing database connection.", 'error = closeErr);
+    }
+
+    if (loopError is error) {
+        log:printError("Error occured while retrieving org_id and subscription_item_id mappings from the database.", 
+            'error = loopError);
+        return error("Error occured while retrieving org_id and subscription_item_id mappings.");
+    } else {
+        log:printDebug("Successfully retrieved org_id and subscription_item_id from the database");
+        return orgIdSubItemIdMappings;
     }
 }
 
@@ -432,8 +495,8 @@ public function updateSubscription(SubscriptionDAO subscription) returns error? 
         orgHandle = subscription.org_handle);
     sql:ParameterizedQuery updateSubscriptionQuery = `UPDATE subscription SET org_id = ${subscription.org_id},
         org_handle = ${subscription.org_handle}, tier_id = ${subscription.tier_id},
-        billing_date = ${subscription.billing_date}, status = ${subscription.status}
-        WHERE id = ${subscription?.id}`;
+        billing_date = ${subscription.billing_date}, status = ${subscription.status},
+        stripe_subscription_item_id = ${subscription?.subscription_item_id} WHERE id = ${subscription?.id}`;
     sql:ExecutionResult|sql:Error result = dbClient->execute(updateSubscriptionQuery);
 
     if (result is sql:Error) {
