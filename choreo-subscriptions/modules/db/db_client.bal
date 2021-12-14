@@ -192,6 +192,9 @@ public function getSubscriptionsCount() returns int|error {
     }
 }
 
+# Retrieves the number of paid subscriptions available in the DB
+# 
+# + return - Number of paid subscriptions available in the DB
 public function getPaidSubscriptionsCount() returns int|error {
     log:printDebug("Getting the count of paid subscriptions from the database");
     sql:ParameterizedQuery paidSubscriptionCountQuery = `SELECT COUNT(*) AS total FROM subscription WHERE
@@ -207,8 +210,8 @@ public function getPaidSubscriptionsCount() returns int|error {
     if (countResult is record {|record {} value;|}) {
         return <int>countResult.value["total"];
     } else {
-        log:printError("Error occured while retrieving paid subsription count from the database", 'error = countResult);
-        return error("Error occured while retrieving paid subsription count from the database");
+        log:printError("Error occured while retrieving paid subscription count from the database", 'error = countResult);
+        return error("Error occured while retrieving paid subscription count from the database");
     }
 }
 
@@ -238,7 +241,7 @@ public function getSubscription(string subscriptionId) returns SubscriptionDAO|e
     }
 }
 
-# Description
+# Retrieves organization and subscription item id mapping from DB
 #
 # + offset - The offset value from where the records to be retrieved
 # + limit - The number of records required
