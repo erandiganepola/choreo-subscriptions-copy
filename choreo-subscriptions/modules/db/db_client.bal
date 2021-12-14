@@ -193,7 +193,7 @@ public function getSubscriptionsCount() returns int|error {
 }
 
 # Retrieves the number of paid subscriptions available in the DB
-# 
+#
 # + return - Number of paid subscriptions available in the DB
 public function getPaidSubscriptionsCount() returns int|error {
     log:printDebug("Getting the count of paid subscriptions from the database");
