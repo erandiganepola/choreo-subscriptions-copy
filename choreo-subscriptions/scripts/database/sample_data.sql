@@ -1,48 +1,24 @@
 INSERT INTO choreo_subscriptions_db.dbo.[attribute] (id,name,description,created_at) VALUES
-	 (N'01ebea30-6199-152a-b9c8-53a5e8c83008',N'service_quota',N'Number of services can be created',1627639797657),
-	 (N'01ebea3b-2dba-182a-9aad-b68df13c86d0',N'api_quota',N'Number of apis can be created',1627639797657),
-	 (N'01ebea3c-0b3c-1bf8-a1a7-22eb4cc3566e',N'remote_app_quota',N'Number of remote apps can be created',1627639797657),
-	 (N'01ebea43-d02d-1c12-8ae0-1b5947056fc1',N'integration_quota',N'Number of integrations can be created',1627639797657),
-	 (N'01ec0a51-c895-14fe-9dc7-1b40e9c0a60a',N'step_quota',N'Number of steps allocated',1627639797657),
-	 (N'01ec1c6d-956e-175a-ad64-0f27c561adb8',N'developer_count',N'Number of developers can be allocated',1627639797657);
+	 (N'01ebea30-6199-152a-b9c8-53a5e8c83008',N'running_app_quota',N'Number of running applications quota',1627639797657),
+	 (N'01ebea3b-2dba-182a-9aad-b68df13c86d0',N'component_quota',N'Number of components can be created',1627639797657);
 GO
 
-INSERT INTO choreo_subscriptions_db.dbo.tier (id,name,description,cost,created_at,is_internal) VALUES
-	 (N'01ebea3a-7735-10be-b3c0-ba95f991e877',N'Free Tier',N'Free tier to tryout choreo',0,1627639797657,0),
-	 (N'01ebea43-be76-1d7a-b410-2d1b873c57af',N'Enterprise Tier',N'Tier for enterprise users',100000,1627639797657,1),
-	 (N'01ec1f8e-7ba6-1f88-bd74-41709200d0c0',N'Individual Tier',N'Tier for Individual users',50,1627639797657,0),
-	 (N'01ec1d1e-0e9c-16e4-b6c9-1904e9ef9567',N'Team Tier',N'Tier for team users',395,1627639797657,0),
-	 (N'01ec1f82-5451-1cfa-83ca-222452b503ab',N'Group Tier',N'Tier for Group users',995,1627639797657,0);	 
+INSERT INTO choreo_subscriptions_db.dbo.tier (id,name,description,is_paid,created_at,is_internal) VALUES
+	 (N'01ebea3a-7735-10be-b3c0-ba95f991e877',N'Free',N'Free tier to tryout choreo',0,1627639797657,0),
+	 (N'01ebea43-be76-1d7a-b410-2d1b873c57af',N'Enterprise',N'Tier for enterprise users',1,1627639797657,0),
+	 (N'01ec1f8e-7ba6-1f88-bd74-41709200d0c0',N'Pay-As-You-Go',N'Tier for paid users',1,1627639797657,0),
+	 (N'01ec1d1e-0e9c-16e4-b6c9-1904e9ef9567',N'Internal',N'Tier for internal users',1,1627639797657,1);	 
 GO
 
 INSERT INTO choreo_subscriptions_db.dbo.quota (tier_id,attribute_name,threshold) VALUES
-	 (N'01ebea3a-7735-10be-b3c0-ba95f991e877',N'service_quota',10),
-	 (N'01ebea3a-7735-10be-b3c0-ba95f991e877',N'integration_quota',10),
-	 (N'01ebea3a-7735-10be-b3c0-ba95f991e877',N'api_quota',20),
- 	 (N'01ebea3a-7735-10be-b3c0-ba95f991e877',N'remote_app_quota',10),
-	 (N'01ebea3a-7735-10be-b3c0-ba95f991e877',N'step_quota',1000),
-	 (N'01ebea3a-7735-10be-b3c0-ba95f991e877',N'developer_count',1),
-	 (N'01ebea43-be76-1d7a-b410-2d1b873c57af',N'service_quota',100),
-	 (N'01ebea43-be76-1d7a-b410-2d1b873c57af',N'integration_quota',100),
-	 (N'01ebea43-be76-1d7a-b410-2d1b873c57af',N'api_quota',100),
-	 (N'01ebea43-be76-1d7a-b410-2d1b873c57af',N'remote_app_quota',100),
-	 (N'01ebea43-be76-1d7a-b410-2d1b873c57af',N'step_quota',1000000),
-	 (N'01ebea43-be76-1d7a-b410-2d1b873c57af',N'developer_count',-1),
-	 (N'01ec1f8e-7ba6-1f88-bd74-41709200d0c0',N'service_quota',100),
-	 (N'01ec1f8e-7ba6-1f88-bd74-41709200d0c0',N'integration_quota',100),
-	 (N'01ec1f8e-7ba6-1f88-bd74-41709200d0c0',N'api_quota',100),
-	 (N'01ec1f8e-7ba6-1f88-bd74-41709200d0c0',N'step_quota',10000),
-	 (N'01ec1f8e-7ba6-1f88-bd74-41709200d0c0',N'developer_count',1),
-	 (N'01ec1d1e-0e9c-16e4-b6c9-1904e9ef9567',N'service_quota',100),
-	 (N'01ec1d1e-0e9c-16e4-b6c9-1904e9ef9567',N'integration_quota',100),
-	 (N'01ec1d1e-0e9c-16e4-b6c9-1904e9ef9567',N'api_quota',100),
-	 (N'01ec1d1e-0e9c-16e4-b6c9-1904e9ef9567',N'step_quota',100000),
-	 (N'01ec1d1e-0e9c-16e4-b6c9-1904e9ef9567',N'developer_count',10),
-	 (N'01ec1f82-5451-1cfa-83ca-222452b503ab',N'service_quota',100),
-	 (N'01ec1f82-5451-1cfa-83ca-222452b503ab',N'integration_quota',50),
-	 (N'01ec1f82-5451-1cfa-83ca-222452b503ab',N'api_quota',200),
-	 (N'01ec1f82-5451-1cfa-83ca-222452b503ab',N'step_quota',1000000),
-	 (N'01ec1f82-5451-1cfa-83ca-222452b503ab',N'developer_count',50);
+	 (N'01ebea3a-7735-10be-b3c0-ba95f991e877',N'running_app_quota',5),
+	 (N'01ebea3a-7735-10be-b3c0-ba95f991e877',N'component_quota',10),
+	 (N'01ebea43-be76-1d7a-b410-2d1b873c57af',N'running_app_quota',1000000000),
+	 (N'01ebea43-be76-1d7a-b410-2d1b873c57af',N'component_quota',1000000000),
+	 (N'01ec1f8e-7ba6-1f88-bd74-41709200d0c0',N'running_app_quota',1000000000),
+	 (N'01ec1f8e-7ba6-1f88-bd74-41709200d0c0',N'component_quota',1000000000)
+	 (N'01ec1d1e-0e9c-16e4-b6c9-1904e9ef9567',N'running_app_quota',1000000),
+	 (N'01ec1d1e-0e9c-16e4-b6c9-1904e9ef9567',N'component_quota',1000000);
 GO
 
 INSERT INTO choreo_subscriptions_db.dbo.subscription (id,org_id,org_handle,tier_id,billing_date,status) VALUES

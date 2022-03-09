@@ -20,7 +20,7 @@ BEGIN
         id VARCHAR(128) NOT NULL,
         name VARCHAR(256) NOT NULL,
         description VARCHAR(1024) NOT NULL,
-        cost INTEGER NOT NULL,
+        is_paid BIT NOT NULL,
         created_at BIGINT DEFAULT DATEDIFF_BIG(MILLISECOND,'1970-01-01 00:00:00.000', SYSUTCDATETIME()),
         is_internal BIT NOT NULL DEFAULT 1,
         PRIMARY KEY (ID)
@@ -38,6 +38,8 @@ BEGIN
         stripe_subscription_item_id VARCHAR(128) DEFAULT NULL,
         billing_date BIGINT DEFAULT DATEDIFF_BIG(MILLISECOND,'1970-01-01 00:00:00.000', SYSUTCDATETIME()),
         status VARCHAR(128) NOT NULL,
+        is_paid BIT NOT NULL DEFAULT 0,
+        step_quota INTEGER NOT NULL DEFAULT 5000,
         created_at BIGINT DEFAULT DATEDIFF_BIG(MILLISECOND,'1970-01-01 00:00:00.000', SYSUTCDATETIME()),
         PRIMARY KEY (org_id, tier_id),
         UNIQUE (id),
