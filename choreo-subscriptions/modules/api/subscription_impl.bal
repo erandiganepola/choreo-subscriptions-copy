@@ -64,7 +64,9 @@ public function getSubscription(string subscriptionId) returns GetSubscriptionRe
                 org_handle: subscription.org_handle,
                 tier_id: subscription.tier_id,
                 billing_date: subscription.billing_date,
-                status: subscription.status
+                status: subscription.status,
+                is_paid: subscription.is_paid,
+                step_quota: subscription.step_quota
             }
         };
         return getSubscriptionResponse;
@@ -88,7 +90,9 @@ public function getSubscriptionByOrgId(string orgId) returns GetSubscriptionResp
                 org_handle: subscription.org_handle,
                 tier_id: subscription.tier_id,
                 billing_date: subscription.billing_date,
-                status: subscription.status
+                status: subscription.status,
+                is_paid: subscription.is_paid,
+                step_quota: subscription.step_quota
             }
         };
         return getSubscriptionResponse;
@@ -112,7 +116,9 @@ public function getSubscriptionByOrgHandle(string orgHandle) returns GetSubscrip
                 org_handle: subscription.org_handle,
                 tier_id: subscription.tier_id,
                 billing_date: subscription.billing_date,
-                status: subscription.status
+                status: subscription.status,
+                is_paid: subscription.is_paid,
+                step_quota: subscription.step_quota
             }
         };
         return getSubscriptionResponse;
@@ -135,6 +141,7 @@ public function getSubscriptionTierMappingForOrgId(string orgId) returns Subscri
                 tier_id: subscriptionTierMapping.tier_id,
                 tier_name: subscriptionTierMapping.tier_name,
                 billing_date: subscriptionTierMapping.billing_date,
+                is_paid: subscriptionTierMapping.is_paid,
                 step_quota: subscriptionTierMapping.step_quota
             }
         };
@@ -164,6 +171,7 @@ public function getSubscriptionTierMappings(int offset, int 'limit) returns Subs
                     tier_id: subTierMapping.tier_id,
                     tier_name: subTierMapping.tier_name,
                     billing_date: subTierMapping.billing_date,
+                    is_paid: subTierMapping.is_paid,
                     step_quota: subTierMapping.step_quota
                 };
                 paginatedSubscriptions[i] = subTierMappingDTO;
@@ -218,106 +226,6 @@ public function getOrgIdSubItemIdMappings(int offset, int 'limit) returns GetOrg
     }
 }
 
-# Creates a new Tier and returns
-#
-# + createTierRequest - The tier object needs to be created
-# + return - Created tier object
-public function createTier(CreateTierRequest createTierRequest) returns CreateTierResponse|error {
-    log:printDebug("Creating a tier with the given metadata", tier = createTierRequest.tier);
-    string uuid = uuid:createType1AsString();
-    db:TierDAO tierDAOIn = {
-        id: uuid,
-        name: createTierRequest.tier.name,
-        description: createTierRequest.tier.description,
-        cost: createTierRequest.tier.cost
-    };
-
-    CreateTierResponse createTierResponse = {};
-    boolean isRollbacked = false;
-    boolean isCommitFailed = false;
-    transaction {
-        error? resultAddTier = db:addTier(tierDAOIn);
-        if (resultAddTier is error) {
-            log:printError("Error occured while adding tier to database.", tier = createTierRequest.tier);
-            isRollbacked = true;
-            rollback;
-        } else {
-            db:QuotaRecord[] quotaRecords = [];
-            quotaRecords[0] = {
-                tier_id: uuid,
-                attribute_name: "service_quota",
-                threshold: createTierRequest.tier.service_quota
-            };
-            quotaRecords[1] = {
-                tier_id: uuid,
-                attribute_name: "integration_quota",
-                threshold: createTierRequest.tier.integration_quota
-            };
-            quotaRecords[2] = {
-                tier_id: uuid,
-                attribute_name: "api_quota",
-                threshold: createTierRequest.tier.api_quota
-            };
-            quotaRecords[3] = {
-                tier_id: uuid,
-                attribute_name: "remote_app_quota",
-                threshold: createTierRequest.tier.remote_app_quota
-            };
-            quotaRecords[4] = {
-                tier_id: uuid,
-                attribute_name: "step_quota",
-                threshold: createTierRequest.tier.step_quota
-            };
-            quotaRecords[5] = {
-                tier_id: uuid,
-                attribute_name: "developer_count",
-                threshold: createTierRequest.tier.developer_count
-            };
-
-            error? resultAddTierQuotas = db:addQuotaRecords(quotaRecords);
-            if (resultAddTierQuotas is error) {
-                log:printError("Error occured while adding the tier quota limits to database", 
-                    quotaRecords = quotaRecords, 'error = resultAddTierQuotas);
-                isRollbacked = true;
-                rollback;
-            } else {
-                error? err = commit;
-                if (err is error) {
-                    isCommitFailed = true;
-                    log:printError("Error occured while commiting the transaction to add tier", 'error = err);
-                }
-            }
-        }
-    }
-
-    if (isRollbacked || isCommitFailed) {
-        log:printError("Error while adding tier to the database.", tierId = uuid);
-        return error("Error while adding tier to the database.", tierId = uuid);
-    } else {
-        db:Tier|error tier = db:getTier(uuid);
-        if (tier is error) {
-            return tier;
-        } else {
-            createTierResponse = {
-                tier: {
-                    id: <string>tier?.id,
-                    name: tier.name,
-                    description: tier.description,
-                    cost: tier.cost,
-                    created_at: <int>tier?.created_at,
-                    service_quota: <int>tier?.quota_limits?.service_quota,
-                    integration_quota: <int>tier?.quota_limits?.integration_quota,
-                    api_quota: <int>tier?.quota_limits?.api_quota,
-                    remote_app_quota: <int>tier?.quota_limits?.remote_app_quota,
-                    step_quota: <int>tier?.quota_limits?.step_quota,
-                    developer_count: <int>tier?.quota_limits?.developer_count
-                }
-            };
-        }
-        return createTierResponse;
-    }
-}
-
 # Creates a new subscription object
 #
 # + createSubscriptionRequest - The subscription object need to be created
@@ -333,7 +241,9 @@ public function createSubscription(CreateSubscriptionRequest createSubscriptionR
         org_handle: createSubscriptionRequest.subscription.org_handle,
         tier_id: createSubscriptionRequest.subscription.tier_id,
         billing_date: createSubscriptionRequest.subscription.billing_date,
-        status: createSubscriptionRequest.subscription.status
+        status: createSubscriptionRequest.subscription.status,
+        is_paid: createSubscriptionRequest.subscription.is_paid,
+        step_quota: createSubscriptionRequest.subscription.step_quota
     };
 
     error? result = db:addSubscription(subscriptionDAOin);
@@ -350,6 +260,8 @@ public function createSubscription(CreateSubscriptionRequest createSubscriptionR
                     tier_id: subscriptionDAOOut.tier_id,
                     billing_date: subscriptionDAOOut.billing_date,
                     status: subscriptionDAOOut.status,
+                    is_paid: subscriptionDAOOut.is_paid,
+                    step_quota: subscriptionDAOOut.step_quota,
                     created_at: <int>subscriptionDAOOut?.created_at
                 }
             };
@@ -377,7 +289,9 @@ public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionR
         tier_id: updateSubscriptionRequest.subscription.tier_id,
         subscription_item_id: updateSubscriptionRequest.subscription.subscription_item_id,
         billing_date: updateSubscriptionRequest.subscription.billing_date,
-        status: updateSubscriptionRequest.subscription.status
+        status: updateSubscriptionRequest.subscription.status,
+        is_paid: updateSubscriptionRequest.subscription.is_paid,
+        step_quota: updateSubscriptionRequest.subscription.step_quota
     };
 
     error? result = db:updateSubscription(subscriptionDAOin);
@@ -424,6 +338,8 @@ public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionR
                         tier_id: subscriptionDAOOut.tier_id,
                         billing_date: subscriptionDAOOut.billing_date,
                         status: subscriptionDAOOut.status,
+                        is_paid: subscriptionDAOOut.is_paid,
+                        step_quota: subscriptionDAOOut.step_quota,
                         created_at: <int>subscriptionDAOOut?.created_at
                     }
                 };
@@ -546,14 +462,10 @@ function getTierForOrgFromCache(string orgIdentifier) returns GetTierDetailRespo
                     id: (check tierJson.id).toString(),
                     name: (check tierJson.name).toString(),
                     description: (check tierJson.description).toString(),
-                    cost: check tierJson.cost,
+                    is_paid: check tierJson.is_paid,
                     created_at: <int>(check tierJson.created_at),
-                    integration_quota: <int>(check tierJson.integration_quota),
-                    service_quota: <int>(check tierJson.service_quota),
-                    api_quota: <int>(check tierJson.api_quota),
-                    remote_app_quota: <int>(check tierJson.remote_app_quota),
-                    step_quota: <int>(check tierJson.step_quota),
-                    developer_count: <int>(check tierJson.developer_count)
+                    running_app_quota: <int>(check tierJson.quota_limits?.running_app_quota),
+                    component_quota: <int>(check tierJson.quota_limits?.component_quota)
                 }
             };
             return getTierDetailResponse;
@@ -576,14 +488,10 @@ function getTierForOrgIdFromDB(string orgId) returns GetTierDetailResponse|error
                 id: <string>tier?.id,
                 name: tier.name,
                 description: tier.description,
-                cost: tier.cost,
+                is_paid: <boolean>tier?.is_paid,
                 created_at: <int>tier?.created_at,
-                service_quota: <int>tier?.quota_limits?.service_quota,
-                integration_quota: <int>tier?.quota_limits?.integration_quota,
-                api_quota: <int>tier?.quota_limits?.api_quota,
-                remote_app_quota: <int>tier?.quota_limits?.remote_app_quota,
-                step_quota: <int>tier?.quota_limits?.step_quota,
-                developer_count: <int>tier?.quota_limits?.developer_count
+                running_app_quota: <int>tier?.quota_limits?.running_app_quota,
+                component_quota: <int>tier?.quota_limits?.component_quota
             };
             string|error entry = cache:setEntry(orgId, tierDTO.toString());
             GetTierDetailResponse getTierDetailResponse = {tier: tierDTO};
@@ -607,14 +515,10 @@ function getTiersFromDB(boolean internal) returns GetTiersResponse|error {
                 id: <string>tier?.id,
                 name: tier.name,
                 description: tier.description,
-                cost: tier.cost,
-                created_at: <int>tier?.created_at,
-                service_quota: <int>tier?.quota_limits?.service_quota,
-                integration_quota: <int>tier?.quota_limits?.integration_quota,
-                api_quota: <int>tier?.quota_limits?.api_quota,
-                remote_app_quota: <int>tier?.quota_limits?.remote_app_quota,
-                step_quota: <int>tier?.quota_limits?.step_quota,
-                developer_count: <int>tier?.quota_limits?.developer_count
+                is_paid: <boolean>tier?.is_paid,
+                created_at: tier.created_at,
+                running_app_quota: <int>tier?.quota_limits?.running_app_quota,
+                component_quota: <int>tier?.quota_limits?.component_quota
             };
             apiTiers[tierCount] = tierDTO;
             tierCount += 1;
@@ -640,14 +544,10 @@ function getTierForOrgHandleFromDB(string orgHandle) returns GetTierDetailRespon
                 id: <string>tier?.id,
                 name: tier.name,
                 description: tier.description,
-                cost: tier.cost,
-                created_at: <int>tier?.created_at,
-                service_quota: <int>tier?.quota_limits?.service_quota,
-                integration_quota: <int>tier?.quota_limits?.integration_quota,
-                api_quota: <int>tier?.quota_limits?.api_quota,
-                remote_app_quota: <int>tier?.quota_limits?.remote_app_quota,
-                step_quota: <int>tier?.quota_limits?.step_quota,
-                developer_count: <int>tier?.quota_limits?.developer_count
+                is_paid: <boolean>tier?.is_paid,
+                created_at: tier.created_at,
+                running_app_quota: <int>tier?.quota_limits?.running_app_quota,
+                component_quota: <int>tier?.quota_limits?.component_quota
             };
             string|error entry = cache:setEntry(orgHandle, tierDTO.toString());
             GetTierDetailResponse getTierDetailResponse = {tier: tierDTO};
