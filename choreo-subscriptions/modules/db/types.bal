@@ -16,19 +16,15 @@ public type TierRecord record {|
 |};
 
 public type TierQuotas record {|
-    int service_quota = 10;
-    int integration_quota = 10;
-    int api_quota = 30;
-    int remote_app_quota = 10;
-    int step_quota = 0;
-    int developer_count = 0;
+    int running_app_quota = 5;
+    int component_quota = 10;
 |};
 
 public type TierDAO record {|
     string id?;
     string name;
     string description;
-    int cost;
+    boolean is_paid;
     int created_at?;
 |};
 
@@ -36,7 +32,7 @@ public type Tier record {|
     string id?;
     string name = "";
     string description = "";
-    int cost = 0;
+    boolean is_paid?;
     int created_at = 0;
     TierQuotas quota_limits?;
 |};
@@ -45,7 +41,7 @@ public type TierQuotaJoin record {|
     string id;
     string name;
     string description;
-    int cost;
+    boolean is_paid;
     int created_at;
     string attribute_name;
     int threshold;
@@ -57,8 +53,8 @@ public type SubscriptionTierJoin record {|
     string tier_id;
     string tier_name;
     int billing_date;
-    string attribute_name;
-    int threshold;
+    boolean is_paid;
+    int step_quota;
 |};
 
 public type SubscriptionTierMapping record {|
@@ -67,6 +63,7 @@ public type SubscriptionTierMapping record {|
     string tier_id = "";
     string tier_name = "";
     int billing_date;
+    boolean is_paid;
     int step_quota = 0;
 |};
 
@@ -78,6 +75,8 @@ public type SubscriptionDAO record {|
     string subscription_item_id?;
     int billing_date;
     string status;
+    boolean is_paid;
+    int step_quota;
     int created_at?;
 |};
 

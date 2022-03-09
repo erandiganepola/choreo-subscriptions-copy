@@ -40,8 +40,8 @@ function getClient() returns jdbc:Client|error {
 # + return - The subscription object
 public function getSubscriptionForOrgId(string orgId) returns SubscriptionDAO|error {
     log:printDebug("Getting subscription for the organization uuid from the database", orgId = orgId);
-    sql:ParameterizedQuery subscriptionQuery = `SELECT id, org_id, org_handle, tier_id, billing_date, status, created_at
-        FROM subscription WHERE org_id=${orgId}`;
+    sql:ParameterizedQuery subscriptionQuery = `SELECT id, org_id, org_handle, tier_id, billing_date, status,
+        is_paid, step_quota, created_at FROM subscription WHERE org_id=${orgId}`;
     stream<record {}, error> subscriptionResult = dbClient->query(subscriptionQuery, SubscriptionDAO);
     stream<SubscriptionDAO, sql:Error> subscriptionStream = <stream<SubscriptionDAO, sql:Error>>subscriptionResult;
     record {|SubscriptionDAO value;|}|error? subscriptionRecord = subscriptionStream.next();
@@ -67,8 +67,8 @@ public function getSubscriptionForOrgId(string orgId) returns SubscriptionDAO|er
 # + return - The subscription object
 public function getSubscriptionForOrgHandle(string orgHandle) returns SubscriptionDAO|error {
     log:printDebug("Getting subscription for the organization handle from the database", orgHandle = orgHandle);
-    sql:ParameterizedQuery subscriptionQuery = `SELECT id, org_id, org_handle, tier_id, billing_date, status, created_at
-        FROM subscription WHERE org_handle=${orgHandle}`;
+    sql:ParameterizedQuery subscriptionQuery = `SELECT id, org_id, org_handle, tier_id, billing_date, status,
+        is_paid, step_quota, created_at FROM subscription WHERE org_handle=${orgHandle}`;
     stream<record {}, error> subscriptionResult = dbClient->query(subscriptionQuery, SubscriptionDAO);
     stream<SubscriptionDAO, sql:Error> subscriptionStream = <stream<SubscriptionDAO, sql:Error>>subscriptionResult;
     record {|SubscriptionDAO value;|}|error? subscriptionRecord = subscriptionStream.next();
@@ -94,9 +94,8 @@ public function getSubscriptionForOrgHandle(string orgHandle) returns Subscripti
 public function getSubscriptionTierMappingForOrgId(string orgId) returns SubscriptionTierMapping|error {
     log:printDebug("Getting subscription tier mapping from the database", orgId = orgId);
     sql:ParameterizedQuery mappingQuery = `SELECT subscription.org_id, subscription.org_handle,
-        subscription.billing_date, tier.id AS tier_id, tier.name AS tier_name, quota.attribute_name, quota.threshold
-        FROM ((tier INNER JOIN quota ON tier.id = quota.tier_id) INNER JOIN subscription ON
-        tier.id = subscription.tier_id) WHERE subscription.org_id = ${orgId} AND quota.attribute_name = 'step_quota'`;
+        subscription.billing_date, tier.id AS tier_id, tier.name AS tier_name, subscription.is_paid, subscription.step_quota
+        FROM (tier INNER JOIN subscription ON tier.id = subscription.tier_id) WHERE subscription.org_id = ${orgId}`;
     stream<record {}, error> mappingResult = dbClient->query(mappingQuery, SubscriptionTierJoin);
     stream<SubscriptionTierJoin, sql:Error> mappingStream = <stream<SubscriptionTierJoin, sql:Error>>mappingResult;
     record {|SubscriptionTierJoin value;|}|error? mappingRecord = mappingStream.next();
@@ -114,7 +113,8 @@ public function getSubscriptionTierMappingForOrgId(string orgId) returns Subscri
             tier_id: mappingRecord.value.tier_id,
             tier_name: mappingRecord.value.tier_name,
             billing_date: mappingRecord.value.billing_date,
-            step_quota: mappingRecord.value.threshold
+            is_paid: mappingRecord.value.is_paid,
+            step_quota: mappingRecord.value.step_quota
         };
         return subscriptionTierMapping;
     } else {
@@ -132,10 +132,9 @@ public function getSubscriptionTierMappingForOrgId(string orgId) returns Subscri
 public function getSubscriptionTierMappings(int offset, int 'limit) returns SubscriptionTierMapping[]|error {
     log:printDebug("Getting subscription tier mappings from the database", offset = offset, 'limit = 'limit);
     sql:ParameterizedQuery mappingsQuery = `SELECT subscription.org_id, subscription.org_handle, subscription
-        .billing_date, tier.id AS tier_id, tier.name AS tier_name, quota.attribute_name, quota.threshold FROM ((tier
-        INNER JOIN quota ON tier.id = quota.tier_id) INNER JOIN subscription ON tier.id = subscription.tier_id) WHERE
-        quota.attribute_name = 'step_quota' ORDER BY subscription.org_id OFFSET ${offset} ROWS FETCH
-        NEXT ${'limit} ROWS ONLY`;
+        .billing_date, tier.id AS tier_id, tier.name AS tier_name, subscription.is_paid, subscription.step_quota
+        FROM (tier INNER JOIN subscription ON tier.id = subscription.tier_id) ORDER BY subscription.org_id
+        OFFSET ${offset} ROWS FETCH NEXT ${'limit} ROWS ONLY`;
 
     stream<record {}, error> mappingsResult = dbClient->query(mappingsQuery, SubscriptionTierJoin);
     stream<SubscriptionTierJoin, sql:Error> mappingsStream = <stream<SubscriptionTierJoin, sql:Error>>mappingsResult;
@@ -149,7 +148,8 @@ public function getSubscriptionTierMappings(int offset, int 'limit) returns Subs
             tier_id: subscriptionTierJoin.tier_id,
             tier_name: subscriptionTierJoin.tier_name,
             billing_date: subscriptionTierJoin.billing_date,
-            step_quota: subscriptionTierJoin.threshold
+            is_paid: subscriptionTierJoin.is_paid,
+            step_quota: subscriptionTierJoin.step_quota
         };
         subscriptionTierMappings[count] = subscriptionTierMapping;
         count += 1;
@@ -197,8 +197,7 @@ public function getSubscriptionsCount() returns int|error {
 # + return - Number of paid subscriptions available in the DB
 public function getPaidSubscriptionsCount() returns int|error {
     log:printDebug("Getting the count of paid subscriptions from the database");
-    sql:ParameterizedQuery paidSubscriptionCountQuery = `SELECT COUNT(*) AS total FROM subscription WHERE
-    (stripe_subscription_item_id != 'canceled' AND stripe_subscription_item_id IS NOT NULL)`;
+    sql:ParameterizedQuery paidSubscriptionCountQuery = `SELECT COUNT(*) AS total FROM subscription WHERE is_paid=1`;
     stream<record {}, error?> paidSubscriptionCountResult = dbClient->query(paidSubscriptionCountQuery);
     record {|record {} value;|}|error? countResult = paidSubscriptionCountResult.next();
 
@@ -221,8 +220,8 @@ public function getPaidSubscriptionsCount() returns int|error {
 # + return - The subscription object
 public function getSubscription(string subscriptionId) returns SubscriptionDAO|error {
     log:printDebug("Getting subscription from the database", subscriptionId = subscriptionId);
-    sql:ParameterizedQuery subscriptionQuery = `SELECT id, org_id, org_handle, tier_id, billing_date, status, created_at 
-        FROM subscription WHERE id = ${subscriptionId}`;
+    sql:ParameterizedQuery subscriptionQuery = `SELECT id, org_id, org_handle, tier_id, billing_date, status, is_paid,
+        step_quota, created_at FROM subscription WHERE id = ${subscriptionId}`;
     stream<record {}, error> subscriptionResult = dbClient->query(subscriptionQuery, SubscriptionDAO);
     stream<SubscriptionDAO, sql:Error> subscriptionStream = <stream<SubscriptionDAO, sql:Error>>subscriptionResult;
     record {|SubscriptionDAO value;|}|sql:Error subscription = subscriptionStream.next();
@@ -313,7 +312,7 @@ public function getAttribute(string attributeId) returns AttributeDAO|error {
 # + return - The tier object
 public function getTier(string tierId) returns Tier|error {
     log:printDebug("Getting tier from the database", tierId = tierId);
-    sql:ParameterizedQuery tierQuery = `SELECT tier.id, tier.name, tier.description, tier.cost, tier.created_at,
+    sql:ParameterizedQuery tierQuery = `SELECT tier.id, tier.name, tier.description, tier.is_paid, tier.created_at,
         quota.attribute_name, quota.threshold FROM tier INNER JOIN quota ON tier.id = quota.tier_id WHERE
         tier.id = ${tierId}`;
 
@@ -329,7 +328,7 @@ public function getTier(string tierId) returns Tier|error {
                 id: tierQuotaJoin.id,
                 name: tierQuotaJoin.name,
                 description: tierQuotaJoin.description,
-                cost: tierQuotaJoin.cost,
+                is_paid: tierQuotaJoin.is_paid,
                 created_at: tierQuotaJoin.created_at
             };
         }
@@ -367,13 +366,13 @@ public function getTiers(boolean internal) returns Tier[]|error {
 
     log:printDebug("Getting tiers from the database.", is_internal = internal);
     if (internal) {
-        tiersQuery = `SELECT tier.id, tier.name, tier.description, tier.cost, tier.created_at,
+        tiersQuery = `SELECT tier.id, tier.name, tier.description, tier.is_paid, tier.created_at,
         quota.attribute_name, quota.threshold FROM tier INNER JOIN quota ON tier.id = quota.tier_id WHERE
-        tier.is_internal=1 ORDER BY cost`;
+        tier.is_internal=1`;
     } else {
-        tiersQuery = `SELECT tier.id, tier.name, tier.description, tier.cost, tier.created_at,
+        tiersQuery = `SELECT tier.id, tier.name, tier.description, tier.is_paid, tier.created_at,
         quota.attribute_name, quota.threshold FROM tier INNER JOIN quota ON tier.id = quota.tier_id WHERE
-        tier.is_internal=0 ORDER BY cost`;
+        tier.is_internal=0`;
     }
 
     stream<record {}, error> tierResult = dbClient->query(tiersQuery, TierQuotaJoin);
@@ -385,21 +384,20 @@ public function getTiers(boolean internal) returns Tier[]|error {
                 id: tierQuotaJoin.id,
                 name: tierQuotaJoin.name,
                 description: tierQuotaJoin.description,
-                cost: tierQuotaJoin.cost,
+                is_paid: tierQuotaJoin.is_paid,
                 created_at: tierQuotaJoin.created_at
             };
             prevTierId = tierQuotaJoin.id;
         }
-        if (tierQuotaJoin.attribute_name != config:REMOTE_APP_QUOTA) {
-            tierQuotas[tierQuotaJoin.attribute_name] = tierQuotaJoin.threshold;
-            quotaFieldCount += 1;
-            if (quotaFieldCount == 5) {
-                tier.quota_limits = tierQuotas;
-                tiers[uniqueRecordCount] = tier;
-                tierQuotas = {};
-                uniqueRecordCount += 1;
-                quotaFieldCount = 0;
-            }
+        tierQuotas[tierQuotaJoin.attribute_name] = tierQuotaJoin.threshold;
+        quotaFieldCount += 1;
+        // Setting tier quotas to the tier, only after creating tierQuotas object with all quotas
+        if (quotaFieldCount == 2) {
+            tier.quota_limits = tierQuotas;
+            tiers[uniqueRecordCount] = tier;
+            tierQuotas = {};
+            uniqueRecordCount += 1;
+            quotaFieldCount = 0;
         }
     });
 
@@ -446,25 +444,6 @@ public function getTierQuotas(string tierId) returns TierQuotas|error {
     }
 }
 
-# TODO: Modify the method to support adding is_internal flag (currently default)
-# Adds a tier to the database
-#
-# + tier - The tier object needs to be added
-# + return - Error if happened during the database insertion
-public function addTier(TierDAO tier) returns error? {
-    log:printDebug("Adding tier to the database", tier = tier);
-    sql:ParameterizedQuery addTierQuery = `INSERT INTO tier(id, name, description, cost) values (${tier?.id},
-        ${tier.name}, ${tier.description}, ${tier.cost})`;
-    sql:ExecutionResult|sql:Error result = dbClient->execute(addTierQuery);
-
-    if (result is sql:Error) {
-        log:printError("Error while creating tier in database.", name = tier.name, 'error = result);
-        return error("Error while creating tier in the database.");
-    } else {
-        log:printDebug("Successfully created the tier in database.", name = tier.name);
-    }
-}
-
 # Adds a subscription to the database
 #
 # + subscription - The subscription object needs to be added to the database
@@ -472,8 +451,8 @@ public function addTier(TierDAO tier) returns error? {
 public function addSubscription(SubscriptionDAO subscription) returns error? {
     log:printDebug("Adding subscription to the database", subscription = subscription);
     sql:ParameterizedQuery addSubscriptionQuery = `INSERT INTO subscription(id, org_id, org_handle, tier_id,
-        billing_date, status) values(${subscription?.id}, ${subscription.org_id}, ${subscription.org_handle},
-        ${subscription.tier_id}, ${subscription.billing_date}, ${subscription.status})`;
+        billing_date, status, is_paid, step_quota) values(${subscription?.id}, ${subscription.org_id}, ${subscription.org_handle},
+        ${subscription.tier_id}, ${subscription.billing_date}, ${subscription.status}, ${subscription.is_paid}, ${subscription.step_quota})`;
     sql:ExecutionResult|sql:Error result = dbClient->execute(addSubscriptionQuery);
 
     if (result is sql:Error) {
@@ -492,11 +471,12 @@ public function addSubscription(SubscriptionDAO subscription) returns error? {
 # + return - Error if happened during the database update
 public function updateSubscription(SubscriptionDAO subscription) returns error? {
     log:printDebug("Updating the subscription in the database", orgId = subscription.org_id, 
-        orgHandle = subscription.org_handle);
+        orgHandle = subscription.org_handle, tier_id = subscription.tier_id);
     sql:ParameterizedQuery updateSubscriptionQuery = `UPDATE subscription SET org_id = ${subscription.org_id},
         org_handle = ${subscription.org_handle}, tier_id = ${subscription.tier_id},
         billing_date = ${subscription.billing_date}, status = ${subscription.status},
-        stripe_subscription_item_id = ${subscription?.subscription_item_id} WHERE id = ${subscription?.id}`;
+        stripe_subscription_item_id = ${subscription?.subscription_item_id}, is_paid = ${subscription.is_paid},
+        step_quota = ${subscription.step_quota} WHERE id = ${subscription?.id}`;
     sql:ExecutionResult|sql:Error result = dbClient->execute(updateSubscriptionQuery);
 
     if (result is sql:Error) {

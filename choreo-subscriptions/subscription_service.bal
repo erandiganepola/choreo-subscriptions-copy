@@ -37,9 +37,6 @@ service "SubscriptionService" on ep {
     remote function GetSubscriptionTierMappings(api:SubscriptionTierMappingsRequest value) returns api:SubscriptionTierMappingsResponse|error {
         return api:getSubscriptionTierMappings(value.pagination.offset, value.pagination.'limit);
     }
-    remote function CreateTier(api:CreateTierRequest value) returns api:CreateTierResponse|error {
-        return api:createTier(value);
-    }
     remote function CreateSubscription(api:CreateSubscriptionRequest value) returns api:CreateSubscriptionResponse|error {
         return api:createSubscription(value);
     }
