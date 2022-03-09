@@ -9,56 +9,44 @@ import ballerina/test;
 import ballerinax/java.jdbc;
 
 TierQuotas mockTierQuotas = {
-    integration_quota: 15,
-    service_quota: 10,
-    api_quota: 20,
-    remote_app_quota: 10,
-    step_quota: 1000,
-    developer_count: 1
+    running_app_quota: 5,
+    component_quota: 10
 };
 
 Tier mockTier = {
     id: "0ccca02-643a43ae-a38-200f2b",
-    name: "Free Tier",
+    name: "Free",
     description: "Free allocation to tryout choreo",
-    cost: 0,
+    is_paid: false,
     created_at: 1627639797657,
     quota_limits: mockTierQuotas
 };
 
 TierQuotas[] mockTierQuotasArray = [
     {
-    integration_quota: 15,
-    service_quota: 10,
-    api_quota: 20,
-    remote_app_quota: 10,
-    step_quota: 1000,
-    developer_count: 1
+    running_app_quota: 5,
+    component_quota: 10
 }, 
     {
-    integration_quota: 30,
-    service_quota: 20,
-    api_quota: 40,
-    remote_app_quota: 10,
-    step_quota: 10000,
-    developer_count: 1
+    running_app_quota: 1000000,
+    component_quota: 1000000
 }
 ];
 
 Tier[] mockTierArray = [
     {
     id: "0ccca02-643a43ae-a38-200f2b",
-    name: "Free Tier",
+    name: "Free",
     description: "Free allocation to tryout choreo",
-    cost: 0,
+    is_paid: false,
     created_at: 1627639797657,
     quota_limits: mockTierQuotasArray[0]
 }, 
     {
     id: "01ec1f8e-7ba6-1f88-bd74-41709200d0c0",
-    name: "Individual",
-    description: "Individual tier plan",
-    cost: 50,
+    name: "Pay-As-You-Go",
+    description: "Tier for paid users",
+    is_paid: true,
     created_at: 1627639797657,
     quota_limits: mockTierQuotasArray[1]
 }
@@ -71,6 +59,8 @@ SubscriptionDAO mockSubscriptionDAO = {
     tier_id: "7a13129e-b663-4724-ae7e-5c2e1c364d1c",
     billing_date: 1627639797657,
     status: "ACTIVE",
+    is_paid: false,
+    step_quota: 5000,
     created_at: 1627639797657
 };
 
@@ -78,26 +68,29 @@ SubscriptionTierMapping mockSubscriptionTierMapping = {
     org_id: "0ccca02-643a43ae-a38-200f2b",
     tier_id: "9nffg02-612k12ae-a38-kiod2b",
     org_handle: "jhondoe",
-    tier_name: "Free Tier",
+    tier_name: "Free",
     billing_date: 1627639797657,
-    step_quota: 1000
+    is_paid: false,
+    step_quota: 5000
 };
 
 SubscriptionTierMapping[] mockSubscriptionTierMappings = [{
     org_id: "0ccca02-643a43ae-a38-200f2b",
     tier_id: "9nffg02-612k12ae-a38-kiod2b",
     org_handle: "jhondoe",
-    tier_name: "Free Tier",
+    tier_name: "Free",
     billing_date: 1627639797667,
-    step_quota: 1000
+    is_paid: false,
+    step_quota: 5000
 }, 
 {
     org_id: "lk78ot-643a43ae-a38-2oof2b",
     tier_id: "9nffg02-600ki98ae-a38g-kbnjb",
     org_handle: "bessjob",
-    tier_name: "Enterprise Tier",
+    tier_name: "Enterprise",
     billing_date: 1627639797677,
-    step_quota: 1000000
+    is_paid: true,
+    step_quota: 10000000
 }];
 
 AttributeDAO mockAttributeDAO = {
@@ -247,12 +240,8 @@ function returnMockedAttributeDAOStream() returns stream<AttributeDAO, error> {
 class TierQuotasStreamImplementor {
     private int index = 0;
     private QuotaRecord[] currentEntries = [
-        {attribute_name: "service_quota", threshold: 10}, 
-        {attribute_name: "integration_quota", threshold: 15}, 
-        {attribute_name: "api_quota", threshold: 20}, 
-        {attribute_name: "remote_app_quota", threshold: 10}, 
-        {attribute_name: "step_quota", threshold: 1000}, 
-        {attribute_name: "developer_count", threshold: 1}
+        {attribute_name: "running_app_quota", threshold: 5}, 
+        {attribute_name: "component_quota", threshold: 10}
     ];
 
     isolated function init() {
@@ -271,56 +260,21 @@ class TierQuotaJoinStreamImplementor {
     private int index = 0;
     private TierQuotaJoin[] currentEntries = [{
         id: "0ccca02-643a43ae-a38-200f2b",
+        name: "Free",
+        description: "Free allocation to tryout choreo",
+        is_paid: false,
+        created_at: 1627639797657,
+        attribute_name: "running_app_quota",
+        threshold: 5
+    }, 
+    {
+        id: "0ccca02-643a43ae-a38-200f2b",
         name: "Free Tier",
         description: "Free allocation to tryout choreo",
-        cost: 0,
+        is_paid: false,
         created_at: 1627639797657,
-        attribute_name: "service_quota",
+        attribute_name: "component_quota",
         threshold: 10
-    }, 
-    {
-        id: "0ccca02-643a43ae-a38-200f2b",
-        name: "Free Tier",
-        description: "Free allocation to tryout choreo",
-        cost: 0,
-        created_at: 1627639797657,
-        attribute_name: "integration_quota",
-        threshold: 15
-    }, 
-    {
-        id: "0ccca02-643a43ae-a38-200f2b",
-        name: "Free Tier",
-        description: "Free allocation to tryout choreo",
-        cost: 0,
-        created_at: 1627639797657,
-        attribute_name: "api_quota",
-        threshold: 20
-    }, 
-    {
-        id: "0ccca02-643a43ae-a38-200f2b",
-        name: "Free Tier",
-        description: "Free allocation to tryout choreo",
-        cost: 0,
-        created_at: 1627639797657,
-        attribute_name: "remote_app_quota",
-        threshold: 10
-    }, 
-    {
-        id: "0ccca02-643a43ae-a38-200f2b",
-        name: "Free Tier",
-        description: "Free allocation to tryout choreo",
-        cost: 0,
-        created_at: 1627639797657,
-        attribute_name: "step_quota",
-        threshold: 1000
-    }, {
-        id: "0ccca02-643a43ae-a38-200f2b",
-        name: "Free Tier",
-        description: "Free allocation to tryout choreo",
-        cost: 0,
-        created_at: 1627639797657,
-        attribute_name: "developer_count",
-        threshold: 1
     }];
 
     isolated function init() {
@@ -339,109 +293,39 @@ class TiersQuotaJoinStreamImplementor {
     private int index = 0;
     private TierQuotaJoin[] currentEntries = [{
         id: "0ccca02-643a43ae-a38-200f2b",
-        name: "Free Tier",
+        name: "Free",
         description: "Free allocation to tryout choreo",
-        cost: 0,
+        is_paid: false,
         created_at: 1627639797657,
-        attribute_name: "service_quota",
-        threshold: 10
+        attribute_name: "running_app_quota",
+        threshold: 5
     }, 
     {
         id: "0ccca02-643a43ae-a38-200f2b",
         name: "Free Tier",
         description: "Free allocation to tryout choreo",
-        cost: 0,
+        is_paid: false,
         created_at: 1627639797657,
-        attribute_name: "integration_quota",
-        threshold: 15
-    }, 
-    {
-        id: "0ccca02-643a43ae-a38-200f2b",
-        name: "Free Tier",
-        description: "Free allocation to tryout choreo",
-        cost: 0,
-        created_at: 1627639797657,
-        attribute_name: "api_quota",
-        threshold: 20
-    }, 
-    {
-        id: "0ccca02-643a43ae-a38-200f2b",
-        name: "Free Tier",
-        description: "Free allocation to tryout choreo",
-        cost: 0,
-        created_at: 1627639797657,
-        attribute_name: "remote_app_quota",
-        threshold: 10
-    }, 
-    {
-        id: "0ccca02-643a43ae-a38-200f2b",
-        name: "Free Tier",
-        description: "Free allocation to tryout choreo",
-        cost: 0,
-        created_at: 1627639797657,
-        attribute_name: "step_quota",
-        threshold: 1000
-    }, {
-        id: "0ccca02-643a43ae-a38-200f2b",
-        name: "Free Tier",
-        description: "Free allocation to tryout choreo",
-        cost: 0,
-        created_at: 1627639797657,
-        attribute_name: "developer_count",
-        threshold: 1
-    }, 
-    {
-        id: "01ec1f8e-7ba6-1f88-bd74-41709200d0c0",
-        name: "Individual",
-        description: "Individual tier plan",
-        cost: 50,
-        created_at: 1627639797657,
-        attribute_name: "service_quota",
-        threshold: 20
-    }, 
-    {
-        id: "01ec1f8e-7ba6-1f88-bd74-41709200d0c0",
-        name: "Individual",
-        description: "Individual tier plan",
-        cost: 50,
-        created_at: 1627639797657,
-        attribute_name: "integration_quota",
-        threshold: 30
-    }, 
-    {
-        id: "01ec1f8e-7ba6-1f88-bd74-41709200d0c0",
-        name: "Individual",
-        description: "Individual tier plan",
-        cost: 50,
-        created_at: 1627639797657,
-        attribute_name: "api_quota",
-        threshold: 40
-    }, 
-    {
-        id: "01ec1f8e-7ba6-1f88-bd74-41709200d0c0",
-        name: "Individual",
-        description: "Individual tier plan",
-        cost: 50,
-        created_at: 1627639797657,
-        attribute_name: "remote_app_quota",
+        attribute_name: "component_quota",
         threshold: 10
     }, 
     {
         id: "01ec1f8e-7ba6-1f88-bd74-41709200d0c0",
-        name: "Individual",
-        description: "Individual tier plan",
-        cost: 50,
+        name: "Pay-As-You-Go",
+        description: "Tier for paid users",
+        is_paid: true,
         created_at: 1627639797657,
-        attribute_name: "step_quota",
-        threshold: 10000
-    }, {
+        attribute_name: "running_app_quota",
+        threshold: 1000000
+    }, 
+    {
         id: "01ec1f8e-7ba6-1f88-bd74-41709200d0c0",
-        name: "Individual",
-        description: "Individual tier plan",
-        cost: 50,
+        name: "Pay-As-You-Go",
+        description: "Tier for paid users",
+        is_paid: true,
         created_at: 1627639797657,
-        attribute_name: "developer_count",
-        threshold: 1
+        attribute_name: "component_quota",
+        threshold: 1000000
     }];
 
     isolated function init() {
@@ -462,10 +346,10 @@ class SubscriptionTierJoinStreamImplementor {
         org_id: "0ccca02-643a43ae-a38-200f2b",
         tier_id: "9nffg02-612k12ae-a38-kiod2b",
         org_handle: "jhondoe",
-        tier_name: "Free Tier",
+        tier_name: "Free",
         billing_date: 1627639797657,
-        attribute_name: "step_quota",
-        threshold: 1000
+        is_paid: false,
+        step_quota: 5000
     }];
 
     isolated function init() {
@@ -486,19 +370,19 @@ class SubscriptionTierJoinsStreamImplementor {
         org_id: "0ccca02-643a43ae-a38-200f2b",
         tier_id: "9nffg02-612k12ae-a38-kiod2b",
         org_handle: "jhondoe",
-        tier_name: "Free Tier",
+        tier_name: "Free",
         billing_date: 1627639797667,
-        attribute_name: "step_quota",
-        threshold: 1000
+        is_paid: false,
+        step_quota: 5000
     }, 
     {
         org_id: "lk78ot-643a43ae-a38-2oof2b",
         tier_id: "9nffg02-600ki98ae-a38g-kbnjb",
         org_handle: "bessjob",
-        tier_name: "Enterprise Tier",
+        tier_name: "Enterprise",
         billing_date: 1627639797677,
-        attribute_name: "step_quota",
-        threshold: 1000000
+        is_paid: true,
+        step_quota: 10000000
     }];
 
     isolated function init() {
@@ -522,6 +406,8 @@ class SubscriptionDAOStreamImplementor {
         tier_id: "7a13129e-b663-4724-ae7e-5c2e1c364d1c",
         billing_date: 1627639797657,
         status: "ACTIVE",
+        is_paid: false,
+        step_quota: 5000,
         created_at: 1627639797657
     }];
 
