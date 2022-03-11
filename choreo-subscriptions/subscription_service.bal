@@ -7,58 +7,59 @@
 
 import ballerina/grpc;
 import choreo_subscriptions.api;
+import choreo_subscriptions.rpc;
 
 listener grpc:Listener ep = new (9090);
 
-@grpc:ServiceDescriptor {descriptor: api:ROOT_DESCRIPTOR, descMap: api:getDescriptorMap()}
+@grpc:ServiceDescriptor {descriptor: rpc:ROOT_DESCRIPTOR, descMap: rpc:getDescriptorMap()}
 service "SubscriptionService" on ep {
 
-    remote function GetTiers(api:GetTiersRequest value) returns api:GetTiersResponse|error {
+    remote function GetTiers(rpc:GetTiersRequest value) returns rpc:GetTiersResponse|error {
         return api:getTiers(value.internal);
     }
-    remote function GetTierDetailsForOrgId(api:GetTierDetailRequest value) returns api:GetTierDetailResponse|error {
+    remote function GetTierDetailsForOrgId(rpc:GetTierDetailRequest value) returns rpc:GetTierDetailResponse|error {
         return api:getTierDetailsForOrgId(value.org_identifier);
     }
-    remote function GetTierDetailsForOrgHandle(api:GetTierDetailRequest value) returns api:GetTierDetailResponse|error {
+    remote function GetTierDetailsForOrgHandle(rpc:GetTierDetailRequest value) returns rpc:GetTierDetailResponse|error {
         return api:getTierDetailsForOrgHandle(value.org_identifier);
     }
-    remote function GetSubscription(api:GetSubscriptionRequest value) returns api:GetSubscriptionResponse|error {
+    remote function GetSubscription(rpc:GetSubscriptionRequest value) returns rpc:GetSubscriptionResponse|error {
         return api:getSubscription(value.identifier);
     }
-    remote function GetSubscriptionByOrgId(api:GetSubscriptionRequest value) returns api:GetSubscriptionResponse|error {
+    remote function GetSubscriptionByOrgId(rpc:GetSubscriptionRequest value) returns rpc:GetSubscriptionResponse|error {
         return api:getSubscriptionByOrgId(value.identifier);
     }
-    remote function GetSubscriptionByOrgHandle(api:GetSubscriptionRequest value) returns api:GetSubscriptionResponse|error {
+    remote function GetSubscriptionByOrgHandle(rpc:GetSubscriptionRequest value) returns rpc:GetSubscriptionResponse|error {
         return api:getSubscriptionByOrgHandle(value.identifier);
     }
-    remote function GetSubscriptionTierMappingForOrgId(api:SubscriptionTierMappingRequest value) returns api:SubscriptionTierMappingResponse|error {
+    remote function GetSubscriptionTierMappingForOrgId(rpc:SubscriptionTierMappingRequest value) returns rpc:SubscriptionTierMappingResponse|error {
         return api:getSubscriptionTierMappingForOrgId(value.org_identifier);
     }
-    remote function GetSubscriptionTierMappings(api:SubscriptionTierMappingsRequest value) returns api:SubscriptionTierMappingsResponse|error {
+    remote function GetSubscriptionTierMappings(rpc:SubscriptionTierMappingsRequest value) returns rpc:SubscriptionTierMappingsResponse|error {
         return api:getSubscriptionTierMappings(value.pagination.offset, value.pagination.'limit);
     }
-    remote function CreateSubscription(api:CreateSubscriptionRequest value) returns api:CreateSubscriptionResponse|error {
+    remote function CreateSubscription(rpc:CreateSubscriptionRequest value) returns rpc:CreateSubscriptionResponse|error {
         return api:createSubscription(value);
     }
-    remote function UpdateSubscription(api:UpdateSubscriptionRequest value) returns api:UpdateSubscriptionResponse|error {
+    remote function UpdateSubscription(rpc:UpdateSubscriptionRequest value) returns rpc:UpdateSubscriptionResponse|error {
         return api:updateSubscription(value);
     }
-    remote function DeleteSubscription(api:DeleteSubscriptionRequest value) returns api:DeleteSubscriptionResponse|error {
+    remote function DeleteSubscription(rpc:DeleteSubscriptionRequest value) returns rpc:DeleteSubscriptionResponse|error {
         return api:deleteSubscription(value.identifier);
     }
-    remote function DeleteSubscriptionByOrgId(api:DeleteSubscriptionRequest value) returns api:DeleteSubscriptionResponse|error {
+    remote function DeleteSubscriptionByOrgId(rpc:DeleteSubscriptionRequest value) returns rpc:DeleteSubscriptionResponse|error {
         return api:deleteSubscriptionByOrgId(value.identifier);
     }
-    remote function DeleteSubscriptionByOrgHandle(api:DeleteSubscriptionRequest value) returns api:DeleteSubscriptionResponse|error {
+    remote function DeleteSubscriptionByOrgHandle(rpc:DeleteSubscriptionRequest value) returns rpc:DeleteSubscriptionResponse|error {
         return api:deleteSubscriptionByOrgHandle(value.identifier);
     }
-    remote function CreateAttribute(api:CreateAttributeRequest value) returns api:CreateAttributeResponse|error {
+    remote function CreateAttribute(rpc:CreateAttributeRequest value) returns rpc:CreateAttributeResponse|error {
         return api:createAttribute(value);
     }
-    remote function GetDailyStepUsageForOrgId(api:GetTotalStepCountRequest value) returns api:GetTotalStepCountResponse|error {
+    remote function GetDailyStepUsageForOrgId(rpc:GetTotalStepCountRequest value) returns rpc:GetTotalStepCountResponse|error {
         return api:getDailyStepUsageForOrg(value);
     }
-    remote function GetOrgIdSubItemIdMappings(api:GetOrgIdSubItemIdMappingsRequest value) returns api:GetOrgIdSubItemIdMappingsResponse|error {
+    remote function GetOrgIdSubItemIdMappings(rpc:GetOrgIdSubItemIdMappingsRequest value) returns rpc:GetOrgIdSubItemIdMappingsResponse|error {
         return api:getOrgIdSubItemIdMappings(value.pagination.offset, value.pagination.'limit);
     }
 }
