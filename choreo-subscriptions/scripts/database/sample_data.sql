@@ -16,7 +16,7 @@ INSERT INTO choreo_subscriptions_db.dbo.quota (tier_id,attribute_name,threshold)
 	 (N'01ebea43-be76-1d7a-b410-2d1b873c57af',N'running_app_quota',1000000000),
 	 (N'01ebea43-be76-1d7a-b410-2d1b873c57af',N'component_quota',1000000000),
 	 (N'01ec1f8e-7ba6-1f88-bd74-41709200d0c0',N'running_app_quota',1000000000),
-	 (N'01ec1f8e-7ba6-1f88-bd74-41709200d0c0',N'component_quota',1000000000)
+	 (N'01ec1f8e-7ba6-1f88-bd74-41709200d0c0',N'component_quota',1000000000),
 	 (N'01ec1d1e-0e9c-16e4-b6c9-1904e9ef9567',N'running_app_quota',1000000),
 	 (N'01ec1d1e-0e9c-16e4-b6c9-1904e9ef9567',N'component_quota',1000000);
 GO
