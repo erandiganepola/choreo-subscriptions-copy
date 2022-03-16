@@ -11,12 +11,13 @@ import choreo_subscriptions.asb;
 import choreo_subscriptions.db;
 import choreo_subscriptions.cache;
 import choreo_subscriptions.utils;
+import choreo_subscriptions.rpc;
 
 # Returns the list of available tiers
 #
 # + internal - Internal tiers flag
 # + return - Tier list with count  
-public function getTiers(boolean internal) returns GetTiersResponse|error {
+public function getTiers(boolean internal) returns rpc:GetTiersResponse|error {
     log:printDebug("Getting list of tiers", is_internal = internal);
     return getTiersFromDB(internal);
 }
@@ -25,10 +26,10 @@ public function getTiers(boolean internal) returns GetTiersResponse|error {
 #
 # + orgId - uuid of the interested organization
 # + return - Subscribed tier object
-public function getTierDetailsForOrgId(string orgId) returns GetTierDetailResponse|error {
+public function getTierDetailsForOrgId(string orgId) returns rpc:GetTierDetailResponse|error {
     log:printDebug("Getting subscribed tier details for the organization", orgUuid = orgId);
-    GetTierDetailResponse|error getTierDetailResponse = getTierForOrgFromCache(orgId);
-    if (getTierDetailResponse is GetTierDetailResponse) {
+    rpc:GetTierDetailResponse|error getTierDetailResponse = getTierForOrgFromCache(orgId);
+    if (getTierDetailResponse is rpc:GetTierDetailResponse) {
         return getTierDetailResponse;
     } else {
         return getTierForOrgIdFromDB(orgId);
@@ -39,10 +40,10 @@ public function getTierDetailsForOrgId(string orgId) returns GetTierDetailRespon
 #
 # + orgHandle - Handle of the interested organization
 # + return - Subscribed tier object
-public function getTierDetailsForOrgHandle(string orgHandle) returns GetTierDetailResponse|error {
+public function getTierDetailsForOrgHandle(string orgHandle) returns rpc:GetTierDetailResponse|error {
     log:printDebug("Getting subscribed tier details for the organization", orgHandle = orgHandle);
-    GetTierDetailResponse|error getTierDetailResponse = getTierForOrgFromCache(orgHandle);
-    if (getTierDetailResponse is GetTierDetailResponse) {
+    rpc:GetTierDetailResponse|error getTierDetailResponse = getTierForOrgFromCache(orgHandle);
+    if (getTierDetailResponse is rpc:GetTierDetailResponse) {
         return getTierDetailResponse;
     } else {
         return getTierForOrgHandleFromDB(orgHandle);
@@ -53,18 +54,20 @@ public function getTierDetailsForOrgHandle(string orgHandle) returns GetTierDeta
 #
 # + subscriptionId - Id of the interested subscription
 # + return - Subscription object requested
-public function getSubscription(string subscriptionId) returns GetSubscriptionResponse|error {
+public function getSubscription(string subscriptionId) returns rpc:GetSubscriptionResponse|error {
     log:printDebug("Getting subscription details for the subscription id", subscriptionId = subscriptionId);
     db:SubscriptionDAO|error subscription = db:getSubscription(subscriptionId);
     if (subscription is db:SubscriptionDAO) {
-        GetSubscriptionResponse getSubscriptionResponse = {
+        rpc:GetSubscriptionResponse getSubscriptionResponse = {
             subscription: {
                 id: <string>subscription?.id,
                 org_id: subscription.org_id,
                 org_handle: subscription.org_handle,
                 tier_id: subscription.tier_id,
                 billing_date: subscription.billing_date,
-                status: subscription.status
+                status: subscription.status,
+                is_paid: subscription.is_paid,
+                step_quota: subscription.step_quota
             }
         };
         return getSubscriptionResponse;
@@ -77,18 +80,20 @@ public function getSubscription(string subscriptionId) returns GetSubscriptionRe
 #
 # + orgId - Id of the interested organization
 # + return - Subscription object requested
-public function getSubscriptionByOrgId(string orgId) returns GetSubscriptionResponse|error {
+public function getSubscriptionByOrgId(string orgId) returns rpc:GetSubscriptionResponse|error {
     log:printDebug("Getting subscription details for the organization uuid", orgId = orgId);
     db:SubscriptionDAO|error subscription = db:getSubscriptionForOrgId(orgId);
     if (subscription is db:SubscriptionDAO) {
-        GetSubscriptionResponse getSubscriptionResponse = {
+        rpc:GetSubscriptionResponse getSubscriptionResponse = {
             subscription: {
                 id: <string>subscription?.id,
                 org_id: subscription.org_id,
                 org_handle: subscription.org_handle,
                 tier_id: subscription.tier_id,
                 billing_date: subscription.billing_date,
-                status: subscription.status
+                status: subscription.status,
+                is_paid: subscription.is_paid,
+                step_quota: subscription.step_quota
             }
         };
         return getSubscriptionResponse;
@@ -101,18 +106,20 @@ public function getSubscriptionByOrgId(string orgId) returns GetSubscriptionResp
 #
 # + orgHandle - Handle of the interested organization
 # + return - Subscription object requested
-public function getSubscriptionByOrgHandle(string orgHandle) returns GetSubscriptionResponse|error {
+public function getSubscriptionByOrgHandle(string orgHandle) returns rpc:GetSubscriptionResponse|error {
     log:printDebug("Getting subscription details for the organization handle", orgHandle = orgHandle);
     db:SubscriptionDAO|error subscription = db:getSubscriptionForOrgHandle(orgHandle);
     if (subscription is db:SubscriptionDAO) {
-        GetSubscriptionResponse getSubscriptionResponse = {
+        rpc:GetSubscriptionResponse getSubscriptionResponse = {
             subscription: {
                 id: <string>subscription?.id,
                 org_id: subscription.org_id,
                 org_handle: subscription.org_handle,
                 tier_id: subscription.tier_id,
                 billing_date: subscription.billing_date,
-                status: subscription.status
+                status: subscription.status,
+                is_paid: subscription.is_paid,
+                step_quota: subscription.step_quota
             }
         };
         return getSubscriptionResponse;
@@ -125,16 +132,17 @@ public function getSubscriptionByOrgHandle(string orgHandle) returns GetSubscrip
 #
 # + orgId - UUID of the interested organization
 # + return - Subscription tier mapping object
-public function getSubscriptionTierMappingForOrgId(string orgId) returns SubscriptionTierMappingResponse|error {
+public function getSubscriptionTierMappingForOrgId(string orgId) returns rpc:SubscriptionTierMappingResponse|error {
     db:SubscriptionTierMapping|error subscriptionTierMapping = db:getSubscriptionTierMappingForOrgId(orgId);
     if (subscriptionTierMapping is db:SubscriptionTierMapping) {
-        SubscriptionTierMappingResponse subscriptionTierMappingResponse = {
+        rpc:SubscriptionTierMappingResponse subscriptionTierMappingResponse = {
             subscription_tier_mapping: {
                 org_id: subscriptionTierMapping.org_id,
                 org_handle: subscriptionTierMapping.org_handle,
                 tier_id: subscriptionTierMapping.tier_id,
                 tier_name: subscriptionTierMapping.tier_name,
                 billing_date: subscriptionTierMapping.billing_date,
+                is_paid: subscriptionTierMapping.is_paid,
                 step_quota: subscriptionTierMapping.step_quota
             }
         };
@@ -149,27 +157,28 @@ public function getSubscriptionTierMappingForOrgId(string orgId) returns Subscri
 # + offset - The offset value where the pagination start from
 # + limit - Number of objects need to be returned
 # + return - List of subscription tier object, pagination params
-public function getSubscriptionTierMappings(int offset, int 'limit) returns SubscriptionTierMappingsResponse|error {
+public function getSubscriptionTierMappings(int offset, int 'limit) returns rpc:SubscriptionTierMappingsResponse|error {
     int|error subscriptionCount = db:getSubscriptionsCount();
     if (subscriptionCount is int) {
         db:SubscriptionTierMapping[]|error subscriptionTierMappings = db:getSubscriptionTierMappings(offset, 'limit);
         if (subscriptionTierMappings is db:SubscriptionTierMapping[]) {
             int length = subscriptionTierMappings.length();
-            SubscriptionTierMapping[] paginatedSubscriptions = [];
+            rpc:SubscriptionTierMapping[] paginatedSubscriptions = [];
             foreach var i in 0 ..< length {
                 db:SubscriptionTierMapping subTierMapping = subscriptionTierMappings[i];
-                SubscriptionTierMapping subTierMappingDTO = {
+                rpc:SubscriptionTierMapping subTierMappingDTO = {
                     org_id: subTierMapping.org_id,
                     org_handle: subTierMapping.org_handle,
                     tier_id: subTierMapping.tier_id,
                     tier_name: subTierMapping.tier_name,
                     billing_date: subTierMapping.billing_date,
+                    is_paid: subTierMapping.is_paid,
                     step_quota: subTierMapping.step_quota
                 };
                 paginatedSubscriptions[i] = subTierMappingDTO;
             }
 
-            SubscriptionTierMappingsResponse subscriptionTierMappingsResponse = {
+            rpc:SubscriptionTierMappingsResponse subscriptionTierMappingsResponse = {
                 subscription_tier_mappings: {
                     subscription_tier_mappings: paginatedSubscriptions
                 },
@@ -193,13 +202,13 @@ public function getSubscriptionTierMappings(int offset, int 'limit) returns Subs
 # + offset - The offset value where the pagination start from
 # + limit - Number of objects need to be returned
 # + return - List of org_id subscription_item_id mappings object, pagination params  
-public function getOrgIdSubItemIdMappings(int offset, int 'limit) returns GetOrgIdSubItemIdMappingsResponse|error {
+public function getOrgIdSubItemIdMappings(int offset, int 'limit) returns rpc:GetOrgIdSubItemIdMappingsResponse|error {
     log:printDebug("Getting organization id, subscription item id mappings", offset = offset, 'limit = 'limit);
     int|error subscriptionCount = db:getPaidSubscriptionsCount();
     if (subscriptionCount is int) {
         db:OrgIdSubItemIdMapping[]|error orgIdSubItemIdMappings = db:getOrgIdSubItemIdMappings(offset, 'limit);
         if (orgIdSubItemIdMappings is db:OrgIdSubItemIdMapping[]) {
-            GetOrgIdSubItemIdMappingsResponse orgIdSubItemIdMappingsResponse = {
+            rpc:GetOrgIdSubItemIdMappingsResponse orgIdSubItemIdMappingsResponse = {
                 org_sub_item_id_mappings: {
                     org_sub_item_id_mappings: orgIdSubItemIdMappings
                 },
@@ -218,112 +227,12 @@ public function getOrgIdSubItemIdMappings(int offset, int 'limit) returns GetOrg
     }
 }
 
-# Creates a new Tier and returns
-#
-# + createTierRequest - The tier object needs to be created
-# + return - Created tier object
-public function createTier(CreateTierRequest createTierRequest) returns CreateTierResponse|error {
-    log:printDebug("Creating a tier with the given metadata", tier = createTierRequest.tier);
-    string uuid = uuid:createType1AsString();
-    db:TierDAO tierDAOIn = {
-        id: uuid,
-        name: createTierRequest.tier.name,
-        description: createTierRequest.tier.description,
-        cost: createTierRequest.tier.cost
-    };
-
-    CreateTierResponse createTierResponse = {};
-    boolean isRollbacked = false;
-    boolean isCommitFailed = false;
-    transaction {
-        error? resultAddTier = db:addTier(tierDAOIn);
-        if (resultAddTier is error) {
-            log:printError("Error occured while adding tier to database.", tier = createTierRequest.tier);
-            isRollbacked = true;
-            rollback;
-        } else {
-            db:QuotaRecord[] quotaRecords = [];
-            quotaRecords[0] = {
-                tier_id: uuid,
-                attribute_name: "service_quota",
-                threshold: createTierRequest.tier.service_quota
-            };
-            quotaRecords[1] = {
-                tier_id: uuid,
-                attribute_name: "integration_quota",
-                threshold: createTierRequest.tier.integration_quota
-            };
-            quotaRecords[2] = {
-                tier_id: uuid,
-                attribute_name: "api_quota",
-                threshold: createTierRequest.tier.api_quota
-            };
-            quotaRecords[3] = {
-                tier_id: uuid,
-                attribute_name: "remote_app_quota",
-                threshold: createTierRequest.tier.remote_app_quota
-            };
-            quotaRecords[4] = {
-                tier_id: uuid,
-                attribute_name: "step_quota",
-                threshold: createTierRequest.tier.step_quota
-            };
-            quotaRecords[5] = {
-                tier_id: uuid,
-                attribute_name: "developer_count",
-                threshold: createTierRequest.tier.developer_count
-            };
-
-            error? resultAddTierQuotas = db:addQuotaRecords(quotaRecords);
-            if (resultAddTierQuotas is error) {
-                log:printError("Error occured while adding the tier quota limits to database", 
-                    quotaRecords = quotaRecords, 'error = resultAddTierQuotas);
-                isRollbacked = true;
-                rollback;
-            } else {
-                error? err = commit;
-                if (err is error) {
-                    isCommitFailed = true;
-                    log:printError("Error occured while commiting the transaction to add tier", 'error = err);
-                }
-            }
-        }
-    }
-
-    if (isRollbacked || isCommitFailed) {
-        log:printError("Error while adding tier to the database.", tierId = uuid);
-        return error("Error while adding tier to the database.", tierId = uuid);
-    } else {
-        db:Tier|error tier = db:getTier(uuid);
-        if (tier is error) {
-            return tier;
-        } else {
-            createTierResponse = {
-                tier: {
-                    id: <string>tier?.id,
-                    name: tier.name,
-                    description: tier.description,
-                    cost: tier.cost,
-                    created_at: <int>tier?.created_at,
-                    service_quota: <int>tier?.quota_limits?.service_quota,
-                    integration_quota: <int>tier?.quota_limits?.integration_quota,
-                    api_quota: <int>tier?.quota_limits?.api_quota,
-                    remote_app_quota: <int>tier?.quota_limits?.remote_app_quota,
-                    step_quota: <int>tier?.quota_limits?.step_quota,
-                    developer_count: <int>tier?.quota_limits?.developer_count
-                }
-            };
-        }
-        return createTierResponse;
-    }
-}
-
 # Creates a new subscription object
 #
 # + createSubscriptionRequest - The subscription object need to be created
 # + return - created subscription object
-public function createSubscription(CreateSubscriptionRequest createSubscriptionRequest) returns 
-        CreateSubscriptionResponse|error {
+public function createSubscription(rpc:CreateSubscriptionRequest createSubscriptionRequest) returns 
+        rpc:CreateSubscriptionResponse|error {
     log:printDebug("Creating a subscription with the given values", orgId = createSubscriptionRequest.subscription.org_id, 
         tierId = createSubscriptionRequest.subscription.tier_id);
     string uuid = uuid:createType1AsString();
@@ -333,7 +242,9 @@ public function createSubscription(CreateSubscriptionRequest createSubscriptionR
         org_handle: createSubscriptionRequest.subscription.org_handle,
         tier_id: createSubscriptionRequest.subscription.tier_id,
         billing_date: createSubscriptionRequest.subscription.billing_date,
-        status: createSubscriptionRequest.subscription.status
+        status: createSubscriptionRequest.subscription.status,
+        is_paid: createSubscriptionRequest.subscription.is_paid,
+        step_quota: createSubscriptionRequest.subscription.step_quota
     };
 
     error? result = db:addSubscription(subscriptionDAOin);
@@ -342,7 +253,7 @@ public function createSubscription(CreateSubscriptionRequest createSubscriptionR
     } else {
         db:SubscriptionDAO|error subscriptionDAOOut = db:getSubscription(uuid);
         if (subscriptionDAOOut is db:SubscriptionDAO) {
-            CreateSubscriptionResponse createSubscriptionResponse = {
+            rpc:CreateSubscriptionResponse createSubscriptionResponse = {
                 subscription: {
                     id: <string>subscriptionDAOOut?.id,
                     org_id: subscriptionDAOOut.org_id,
@@ -350,6 +261,8 @@ public function createSubscription(CreateSubscriptionRequest createSubscriptionR
                     tier_id: subscriptionDAOOut.tier_id,
                     billing_date: subscriptionDAOOut.billing_date,
                     status: subscriptionDAOOut.status,
+                    is_paid: subscriptionDAOOut.is_paid,
+                    step_quota: subscriptionDAOOut.step_quota,
                     created_at: <int>subscriptionDAOOut?.created_at
                 }
             };
@@ -364,8 +277,8 @@ public function createSubscription(CreateSubscriptionRequest createSubscriptionR
 #
 # + updateSubscriptionRequest - The subscription object with new attributes
 # + return - updated subscription object
-public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionRequest) returns 
-        UpdateSubscriptionResponse|error {
+public function updateSubscription(rpc:UpdateSubscriptionRequest updateSubscriptionRequest) returns 
+        rpc:UpdateSubscriptionResponse|error {
     // TODO : This method need to be updated to identify this is a subscription upgrade method
     string orgId = updateSubscriptionRequest.subscription.org_id;
     string orgHandle = updateSubscriptionRequest.subscription.org_handle;
@@ -377,7 +290,9 @@ public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionR
         tier_id: updateSubscriptionRequest.subscription.tier_id,
         subscription_item_id: updateSubscriptionRequest.subscription.subscription_item_id,
         billing_date: updateSubscriptionRequest.subscription.billing_date,
-        status: updateSubscriptionRequest.subscription.status
+        status: updateSubscriptionRequest.subscription.status,
+        is_paid: updateSubscriptionRequest.subscription.is_paid,
+        step_quota: updateSubscriptionRequest.subscription.step_quota
     };
 
     error? result = db:updateSubscription(subscriptionDAOin);
@@ -416,7 +331,7 @@ public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionR
         } else {
             db:SubscriptionDAO|error subscriptionDAOOut = db:getSubscription(updateSubscriptionRequest.subscription.id);
             if (subscriptionDAOOut is db:SubscriptionDAO) {
-                UpdateSubscriptionResponse updateSubscriptionResponse = {
+                rpc:UpdateSubscriptionResponse updateSubscriptionResponse = {
                     subscription: {
                         id: <string>subscriptionDAOOut?.id,
                         org_id: subscriptionDAOOut.org_id,
@@ -424,6 +339,8 @@ public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionR
                         tier_id: subscriptionDAOOut.tier_id,
                         billing_date: subscriptionDAOOut.billing_date,
                         status: subscriptionDAOOut.status,
+                        is_paid: subscriptionDAOOut.is_paid,
+                        step_quota: subscriptionDAOOut.step_quota,
                         created_at: <int>subscriptionDAOOut?.created_at
                     }
                 };
@@ -441,7 +358,7 @@ public function updateSubscription(UpdateSubscriptionRequest updateSubscriptionR
 #
 # + subscriptionId - The id attribute of the subscription to be deleted
 # + return - id of the deleted subscription
-public function deleteSubscription(string subscriptionId) returns DeleteSubscriptionResponse|error {
+public function deleteSubscription(string subscriptionId) returns rpc:DeleteSubscriptionResponse|error {
     log:printDebug("Deleting a subscription in the database identified by id", subscriptionId = subscriptionId);
     log:printDebug("Getting the subscription from the database to get the orgHandle and invalidate the cache");
     db:SubscriptionDAO|error subscriptionDAO = db:getSubscription(subscriptionId);
@@ -465,7 +382,7 @@ public function deleteSubscription(string subscriptionId) returns DeleteSubscrip
 #
 # + orgId - The org uuid attribute of the subscription to be deleted
 # + return - org uuid of the deleted subscription
-public function deleteSubscriptionByOrgId(string orgId) returns DeleteSubscriptionResponse|error {
+public function deleteSubscriptionByOrgId(string orgId) returns rpc:DeleteSubscriptionResponse|error {
     log:printDebug("Deleting a subscription in the database identified by organization UUID", orgId = orgId);
     log:printDebug("Getting the subscription from the database to get the orgHandle and invalidate the cache");
     db:SubscriptionDAO|error subscriptionDAO = db:getSubscriptionForOrgId(orgId);
@@ -489,7 +406,7 @@ public function deleteSubscriptionByOrgId(string orgId) returns DeleteSubscripti
 #
 # + orgHandle - The org handle attribute of the subscription to be deleted
 # + return - org handle of the deleted subscription
-public function deleteSubscriptionByOrgHandle(string orgHandle) returns DeleteSubscriptionResponse|error {
+public function deleteSubscriptionByOrgHandle(string orgHandle) returns rpc:DeleteSubscriptionResponse|error {
     log:printDebug("Deleting a subscription in the database identified by organization handle", orgHandle = orgHandle);
     error? result = db:deleteSubscriptionByOrgHandle(orgHandle);
     if (result is error) {
@@ -506,7 +423,7 @@ public function deleteSubscriptionByOrgHandle(string orgHandle) returns DeleteSu
 #
 # + createAttributeRequest - The attribute object needs to be created
 # + return - The created attribute object
-public function createAttribute(CreateAttributeRequest createAttributeRequest) returns CreateAttributeResponse|error {
+public function createAttribute(rpc:CreateAttributeRequest createAttributeRequest) returns rpc:CreateAttributeResponse|error {
     log:printDebug("Creating a tier attribute with the given metadata", attribute = createAttributeRequest.attribute);
     string uuid = uuid:createType1AsString();
     db:AttributeDAO attibuteDAOIn = {
@@ -521,7 +438,7 @@ public function createAttribute(CreateAttributeRequest createAttributeRequest) r
     } else {
         db:AttributeDAO|error attributeDAOOut = db:getAttribute(uuid);
         if (attributeDAOOut is db:AttributeDAO) {
-            CreateAttributeResponse createAttributeResponse = {
+            rpc:CreateAttributeResponse createAttributeResponse = {
                 attribute: {
                     id: <string>attributeDAOOut?.id,
                     name: attributeDAOOut.name,
@@ -536,24 +453,20 @@ public function createAttribute(CreateAttributeRequest createAttributeRequest) r
     }
 }
 
-function getTierForOrgFromCache(string orgIdentifier) returns GetTierDetailResponse|error {
+function getTierForOrgFromCache(string orgIdentifier) returns rpc:GetTierDetailResponse|error {
     (string|error)? tierString = cache:getEntry(orgIdentifier);
     if (tierString is string) {
         json|error tierJson = tierString.fromJsonString();
         if (tierJson is json) {
-            GetTierDetailResponse getTierDetailResponse = {
+            rpc:GetTierDetailResponse getTierDetailResponse = {
                 tier: {
                     id: (check tierJson.id).toString(),
                     name: (check tierJson.name).toString(),
                     description: (check tierJson.description).toString(),
-                    cost: check tierJson.cost,
+                    is_paid: check tierJson.is_paid,
                     created_at: <int>(check tierJson.created_at),
-                    integration_quota: <int>(check tierJson.integration_quota),
-                    service_quota: <int>(check tierJson.service_quota),
-                    api_quota: <int>(check tierJson.api_quota),
-                    remote_app_quota: <int>(check tierJson.remote_app_quota),
-                    step_quota: <int>(check tierJson.step_quota),
-                    developer_count: <int>(check tierJson.developer_count)
+                    running_app_quota: <int>(check tierJson.quota_limits?.running_app_quota),
+                    component_quota: <int>(check tierJson.quota_limits?.component_quota)
                 }
             };
             return getTierDetailResponse;
@@ -566,27 +479,23 @@ function getTierForOrgFromCache(string orgIdentifier) returns GetTierDetailRespo
     }
 }
 
-function getTierForOrgIdFromDB(string orgId) returns GetTierDetailResponse|error {
+function getTierForOrgIdFromDB(string orgId) returns rpc:GetTierDetailResponse|error {
     db:SubscriptionDAO|error subscriptionDAO = db:getSubscriptionForOrgId(orgId);
     if (subscriptionDAO is db:SubscriptionDAO) {
         string tierId = subscriptionDAO.tier_id;
         db:Tier|error tier = db:getTier(tierId);
         if (tier is db:Tier) {
-            Tier tierDTO = {
+            rpc:Tier tierDTO = {
                 id: <string>tier?.id,
                 name: tier.name,
                 description: tier.description,
-                cost: tier.cost,
+                is_paid: <boolean>tier?.is_paid,
                 created_at: <int>tier?.created_at,
-                service_quota: <int>tier?.quota_limits?.service_quota,
-                integration_quota: <int>tier?.quota_limits?.integration_quota,
-                api_quota: <int>tier?.quota_limits?.api_quota,
-                remote_app_quota: <int>tier?.quota_limits?.remote_app_quota,
-                step_quota: <int>tier?.quota_limits?.step_quota,
-                developer_count: <int>tier?.quota_limits?.developer_count
+                running_app_quota: <int>tier?.quota_limits?.running_app_quota,
+                component_quota: <int>tier?.quota_limits?.component_quota
             };
             string|error entry = cache:setEntry(orgId, tierDTO.toString());
-            GetTierDetailResponse getTierDetailResponse = {tier: tierDTO};
+            rpc:GetTierDetailResponse getTierDetailResponse = {tier: tierDTO};
             return getTierDetailResponse;
         } else {
             return tier;
@@ -596,30 +505,26 @@ function getTierForOrgIdFromDB(string orgId) returns GetTierDetailResponse|error
     }
 }
 
-function getTiersFromDB(boolean internal) returns GetTiersResponse|error {
+function getTiersFromDB(boolean internal) returns rpc:GetTiersResponse|error {
     //get tiers from database
-    Tier[] apiTiers = [];
+    rpc:Tier[] apiTiers = [];
     int tierCount = 0;
     db:Tier[]|error tiers = db:getTiers(internal);
     if (tiers is db:Tier[]) {
         foreach db:Tier tier in tiers {
-            Tier tierDTO = {
+            rpc:Tier tierDTO = {
                 id: <string>tier?.id,
                 name: tier.name,
                 description: tier.description,
-                cost: tier.cost,
-                created_at: <int>tier?.created_at,
-                service_quota: <int>tier?.quota_limits?.service_quota,
-                integration_quota: <int>tier?.quota_limits?.integration_quota,
-                api_quota: <int>tier?.quota_limits?.api_quota,
-                remote_app_quota: <int>tier?.quota_limits?.remote_app_quota,
-                step_quota: <int>tier?.quota_limits?.step_quota,
-                developer_count: <int>tier?.quota_limits?.developer_count
+                is_paid: <boolean>tier?.is_paid,
+                created_at: tier.created_at,
+                running_app_quota: <int>tier?.quota_limits?.running_app_quota,
+                component_quota: <int>tier?.quota_limits?.component_quota
             };
             apiTiers[tierCount] = tierDTO;
             tierCount += 1;
         }
-        GetTiersResponse getTiersResponse = {
+        rpc:GetTiersResponse getTiersResponse = {
             count: tierCount,
             list: apiTiers
         };
@@ -630,27 +535,23 @@ function getTiersFromDB(boolean internal) returns GetTiersResponse|error {
     }
 }
 
-function getTierForOrgHandleFromDB(string orgHandle) returns GetTierDetailResponse|error {
+function getTierForOrgHandleFromDB(string orgHandle) returns rpc:GetTierDetailResponse|error {
     db:SubscriptionDAO|error subscriptionDAO = db:getSubscriptionForOrgHandle(orgHandle);
     if (subscriptionDAO is db:SubscriptionDAO) {
         string tierId = subscriptionDAO.tier_id;
         db:Tier|error tier = db:getTier(tierId);
         if (tier is db:Tier) {
-            Tier tierDTO = {
+            rpc:Tier tierDTO = {
                 id: <string>tier?.id,
                 name: tier.name,
                 description: tier.description,
-                cost: tier.cost,
-                created_at: <int>tier?.created_at,
-                service_quota: <int>tier?.quota_limits?.service_quota,
-                integration_quota: <int>tier?.quota_limits?.integration_quota,
-                api_quota: <int>tier?.quota_limits?.api_quota,
-                remote_app_quota: <int>tier?.quota_limits?.remote_app_quota,
-                step_quota: <int>tier?.quota_limits?.step_quota,
-                developer_count: <int>tier?.quota_limits?.developer_count
+                is_paid: <boolean>tier?.is_paid,
+                created_at: tier.created_at,
+                running_app_quota: <int>tier?.quota_limits?.running_app_quota,
+                component_quota: <int>tier?.quota_limits?.component_quota
             };
             string|error entry = cache:setEntry(orgHandle, tierDTO.toString());
-            GetTierDetailResponse getTierDetailResponse = {tier: tierDTO};
+            rpc:GetTierDetailResponse getTierDetailResponse = {tier: tierDTO};
             return getTierDetailResponse;
         } else {
             return tier;
@@ -660,13 +561,13 @@ function getTierForOrgHandleFromDB(string orgHandle) returns GetTierDetailRespon
     }
 }
 
-public function getDailyStepUsageForOrg(GetTotalStepCountRequest totalStepCountRequest) returns GetTotalStepCountResponse|error {
+public function getDailyStepUsageForOrg(rpc:GetTotalStepCountRequest totalStepCountRequest) returns rpc:GetTotalStepCountResponse|error {
     log:printDebug("Getting daily step usage details for the organization ", organizationId = totalStepCountRequest.org_identifier);
     db:TotalStepCountDAO[]|error totalStepCount = db:getDailyTotalStepCountForOrg(totalStepCountRequest.org_identifier, 
         totalStepCountRequest.start_date, totalStepCountRequest.end_date);
     if totalStepCount is db:TotalStepCountDAO[] {
-        TotalStepCount[] totalStepCountList = totalStepCount;
-        GetTotalStepCountResponse response = {
+        rpc:TotalStepCount[] totalStepCountList = totalStepCount;
+        rpc:GetTotalStepCountResponse response = {
             total_step_count: totalStepCountList
         };
         return response;
