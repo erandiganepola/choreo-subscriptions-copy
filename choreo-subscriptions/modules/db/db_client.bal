@@ -377,11 +377,9 @@ public function getTiers(boolean internal) returns Tier[]|error {
 
     stream<record {}, error> tierResult = dbClient->query(tiersQuery, TierQuotaJoin);
     stream<TierQuotaJoin, sql:Error> tierStream = <stream<TierQuotaJoin, sql:Error>>tierResult;
-    log:printDebug("SQL query executed.", tierStream = tierStream.toString());
     int iterationCount = 1;
 
     error? loopError = tierStream.forEach(function(TierQuotaJoin tierQuotaJoin) {
-        log:printDebug("Loop iteration: ", iterationCount = iterationCount);
         if (tierQuotaJoin.id != prevTierId) {
             log:printDebug("TierQuotaJoin object: ", id = tierQuotaJoin.id, name = tierQuotaJoin.name, 
                 description = tierQuotaJoin.description, is_paid = tierQuotaJoin.is_paid, 
@@ -407,7 +405,7 @@ public function getTiers(boolean internal) returns Tier[]|error {
         }
         iterationCount += 1;
     });
-    log:printDebug("Tiers looping completed.");
+    log:printDebug("Tiers looping completed.", iterationCount = (iterationCount - 1) / 2);
     error? closeErr = tierStream.close();
     if (closeErr is error) {
         log:printWarn("Error occured while closing database connection.", 'error = closeErr);
